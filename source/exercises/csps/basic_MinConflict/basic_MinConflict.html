@@ -1,0 +1,31 @@
+<html>
+		<title>The 4 Queens</title>
+		<link href="/stylesheets/bootstrap.css" rel="stylesheet">
+		<div class="navbar navbar-top">
+				<div class="navbar-inner">
+						<div class="span12">
+								<a class="brand">The Four Queens</q>
+						</div>
+				</div>
+		</div>
+		<div class="span12">
+			<div class="row">
+					<p>The Min-Conflicts algorithm attempts to solve CSPs iteratively.  It starts by assigning some value to each of the variables, ignoring the constraints while doing so.  Then, while at least one constraint is violated, it repeats the following: (1) pick a variable, (2) assign it to the value in its domain such that after assignment the total number of constraints violated is smallest (amongst all possible selections of values in its domain).</p>
+					<p>In this question you are asked to execute the Min-Conflicts algorithm on the interactive 4-Queen CSP below.  Each queen is dedicated to its own column, i.e. we have variables Q1, Q2, Q3, Q4 and the domain for each one of them is {1, 2, 4, 4}.  In the shown configuration we have Q1=Q2=Q3=Q4.  Two queens are in conflict if they share the same row, diagonal, or column (though in this setting, they can never share the same column). To select and reassign values, follow the following strategy: (1) start from the left column to the right column, move queens up or down; (2) when moving a queen, move it to the block in the column that leads to the fewest conflicts with other queens.  If there are ties, choose the topmost block among them.</p>
+					<p>To reassign the value of a queen, click and drag it to its new block.  If you believe it is already in the correct position, just click the queen.</p>
+			</div>
+			<div class="row">			
+				<div id="paper" class="span6"></div>
+				<div class="span6">
+						<h2 id="response0">Reassign The First Queen</h2>
+						<h2 id="response1"></h2>
+						<h2 id="response2"></h2>
+						<h2 id="response3"></h2>
+				</div>
+			</div>	
+		</div>
+		<script type="text/javascript" src="/javascripts/lib/jquery-1.7.2.min.js"></script>	
+		<script type="text/javascript" src="/javascripts/lib/jquery-ui-1.8.21.custom.min.js"></script>
+		<script type="text/javascript" src="/javascripts/lib/raphael.js"></script>
+		<script type="text/javascript" src="/javascripts/exercises/csps/basic_MinConflict/basic_MinConflict.js"></script>
+</head>

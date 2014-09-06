@@ -1,0 +1,18 @@
+.ansbox {
+    margin-top: 10px;
+    margin-left: 20px;
+}
+#verify {
+    margin-left: 20px;
+    margin-top: 10px;
+}
+
+#answers {
+    position: absolute;
+}
+
+#answer_area {
+    position: absolute;
+    top: 30px;
+    left: 400px;
+}

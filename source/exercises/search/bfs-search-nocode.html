@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Search</title>
+        <link type="text/css" href="/stylesheets/search/smoothness/jquery-ui-1.8.21.custom.css" rel="stylesheet" />
+        <link type="text/css" href="/stylesheets/search/jquery.cluetip.css" rel="stylesheet" />
+        <link type="text/css" href="/stylesheets/search/search.css" rel="stylesheet" />
+        <script language="JavaScript">
+            var hide_search_code=1;
+            var tree_search_debugger=0;
+        </script>
+        <script src="/javascripts/lib/raphael.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/javascripts/lib/jquery-1.7.2.min.js" type="text/javascript"></script>
+		<script type="text/javascript" src="/javascripts/lib/jquery-ui-1.8.21.custom.min.js"></script>
+        <script src="/javascripts/lib/jquery.cluetip.min.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/raphael-utils.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/priority_queue.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/utils.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/search-problem.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <h1>BFS Tree Search (no code)</h1>
+		<p>Runtime demonstration of BFS. The algorithm is run until it finds a path to the Goal state, updating the search tree in the bottom as it progresses.</p>
+        <div>
+            <div id="holder"></div>
+            <div id="pseudocode">
+                <div id="flow_buttons" align="center">
+                    Search type: <select name="stype" id="stype">
+                                <option value="tree_search" selected="selected">Tree Search</option>
+                                <option value="graph_search">Graph Search</option>
+                               </select>&nbsp;&nbsp;
+                    Strategy: <select name="alg_select" id="alg_select">
+                                <option value="DFS">DFS</option>
+                                <option value="BFS" selected="selected">BFS</option>
+                                <option value="UCS">UCS</option>
+                                <option value="Greedy">Greedy</option>
+                                <option value="A*">A*</option>
+                               </select>
+                </div>
+                <button id="next_step">Run</button>
+                <div id="hintbox"> <input type="checkbox" id="pqsearch_showhints" value="1" checked>&nbsp; Show additional details
+about active line in algorithm</div>
+                <ul id="codeguide"></ul><br>
+                <div id="buttons">
+                    <button id="reached_goal">Reached Goal</button>
+                    <button id="not_goal">Not A Goal</button>
+                 </div>
+                <br>
+                <button id="continue_alg">Continue</button>
+            </div>
+            <div id="variables">
+            <b>current_node:</b><div id="current_node"></div>
+            <b>current_node_last_state:</b><div id="current_node_last_state"></div>
+            <b>successor:</b><div id="successor"></div>
+            <b>fringe:</b><div id="fringe" class="arg_var"></div>
+            <div id="explored_set"><b>explored_set:</b><div id="explored_set_val" class="arg_var"></div></div>
+            </div>
+        </div>
+    </body>
+</html>

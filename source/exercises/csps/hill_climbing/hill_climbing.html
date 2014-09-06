@@ -1,0 +1,42 @@
+<html>
+	<!-- <link href="../../../stylesheets/bootstrap.css" rel="stylesheet"> -->
+	<select id="boardSizeSelect" size="1">
+			<option value="current" selected="selected">Change Board Size</option>
+			<option value="#3">3x3</option>
+			<option value="#4">4x4</option>
+			<option value="#5">5x5</option>
+			<option value="#6">6x6</option>
+	</select>
+	<select id="conflictViewSelect" size="1">
+		<option value="1">Total Conflicts</option>
+		<option value="0">Current Queen Conflicts</option>
+	</select>
+	<div>
+		<h3>Simulated Annealing</h3>
+		<input type="radio" name="simulatedAnnealingSelect" value="0" id="sasOff" checked="checked" ></input><label>Off</label>
+		<input type="radio" name="simulatedAnnealingSelect" value="1" id="sasOn"></input><label>On</label>
+	</div>
+	<table id="saValues" border="1" style="visibility: hidden">
+		<tr>
+			<th>temperature</th>
+			<th>delta-energy</th>
+			<th>probability</th>
+			<th>sampled #</th>
+		</tr>
+		<tr>
+			<td id="saTemp">n/a</td>
+			<td id="saDelta">n/a</td>
+			<td id="saProb">n/a</td>
+			<td id="saSample">n/a</td>
+		</tr>
+	</table>
+	<h2 id="conflictCounter"></h2>
+	<div id="code"></div>
+	<button onclick="nextButton()">Next</button>
+	<div id="board"></div>
+	<script src="https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+	<script type="text/javascript" src="/javascripts/lib/raphael.js"></script>
+	<script type="text/javascript" src="/javascripts/lib/jquery-1.7.2.min.js"></script>
+	<script type="text/javascript" src="/javascripts/lib/jquery-ui-1.8.21.custom.min.js"></script>
+	<script type="text/javascript" src="/javascripts/exercises/csps/hill_climbing/hill_climbing.js"></script>
+</html>

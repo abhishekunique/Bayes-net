@@ -1,0 +1,52 @@
+body {
+    width:1600px;
+}
+#holder {
+    float: left;
+    width: 500px;
+}
+
+#pseudocode {
+    float: left;
+    width: 500px;
+    border: 2px solid;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#codeguide {
+    margin-left: 0px;
+    padding-left: 25px;
+}
+
+#codeguide li {
+    /*margin: 3px 3px 3px 3px;*/
+    font-size: 14px;
+    font-weight: bold;
+    list-style: none;
+    font: "Fontin-Sans, Arial";
+}
+
+#variables {
+    white-space: nowrap;
+    top: 20;
+    float: left;
+    width: 84px;
+    font-size:10pt;
+}
+
+#ctrl {
+    float: left;
+    position: absolute;
+    top: 320px;
+}
+
+#tries {
+    font-weight: bold;
+}
+
+.ui-button .ui-button-text
+{
+   padding: 0px 21px 0px 21px !important;
+   font-size: .72em !important;
+}

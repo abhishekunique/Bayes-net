@@ -1,0 +1,29 @@
+<html>
+		<title>The 4 Queens</title>
+		<link href="/stylesheets/bootstrap.css" rel="stylesheet">
+		<div class="navbar navbar-top">
+				<div class="navbar-inner">
+						<div class="span12">
+								<a class="brand">The Four Queens</q>
+						</div>
+				</div>
+		</div>
+		<div class="span12">
+			<div class="row">
+					<p>Below is an 4x4 example of the Four Queens CSP.  Drag and drop the queens such that no two queens share the same y-position or lay on a diagonal.  Because we have restricted the domains of the queens, we can ignore the constraint that no two queens have the same x-position.</p>
+			</div>
+			<div class="row">			
+				<div id="paper" class="span6"></div>
+				<div class="span6">
+						<h2 id="response"></h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="span6"><button id="b" style="margin-left: 100px; padding-left:50px; padding-right:50px;">Check</button></div>
+			</div>
+		</div>
+		<script type="text/javascript" src="/javascripts/lib/jquery-1.7.2.min.js"></script>	
+		<script type="text/javascript" src="/javascripts/lib/jquery-ui-1.8.21.custom.min.js"></script>	
+		<script type="text/javascript" src="/javascripts/lib/raphael.js"></script>
+		<script type="text/javascript" src="/javascripts/exercises/csps/basic_4Queens/basic_4Queens.js"></script>
+</head>

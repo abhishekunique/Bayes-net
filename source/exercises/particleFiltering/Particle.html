@@ -1,0 +1,1561 @@
+<html>
+	<head>
+		<title>CS 188</title>
+		<link href="/stylesheets/particleFiltering/CS188.css" media="screen" rel="stylesheet" type="text/css">
+		<link href="/stylesheets/particleFiltering/filtering.css" media="screen" rel="stylesheet" type="text/css">
+		<script src="/javascripts/exercises/particleFiltering/application.js" type="text/javascript"></script>
+		<script src="https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+		<script src="/javascripts/exercises/particleFiltering/main.js" type="text/javascript"></script>
+
+		<style type="text/css">
+			.MathJax_Hover_Frame {
+				border-radius: .25em;
+				-webkit-border-radius: .25em;
+				-moz-border-radius: .25em;
+				-khtml-border-radius: .25em;
+				box-shadow: 0px 0px 15px #83A;
+				-webkit-box-shadow: 0px 0px 15px #83A;
+				-moz-box-shadow: 0px 0px 15px #83A;
+				-khtml-box-shadow: 0px 0px 15px #83A;
+				border: 1px solid #A6D ! important;
+				display: inline-block;
+				position: absolute
+			}
+			.MathJax_Hover_Arrow {
+				position: absolute;
+				width: 15px;
+				height: 11px;
+				cursor: pointer
+			}
+
+		</style>
+		<style type="text/css">
+			#MathJax_About {
+				position: fixed;
+				left: 50%;
+				width: auto;
+				text-align: center;
+				border: 3px outset;
+				padding: 1em 2em;
+				background-color: #DDDDDD;
+				color: black;
+				cursor: default;
+				font-family: message-box;
+				font-size: 120%;
+				font-style: normal;
+				text-indent: 0;
+				text-transform: none;
+				line-height: normal;
+				letter-spacing: normal;
+				word-spacing: normal;
+				word-wrap: normal;
+				white-space: nowrap;
+				float: none;
+				z-index: 201;
+				border-radius: 15px;
+				-webkit-border-radius: 15px;
+				-moz-border-radius: 15px;
+				-khtml-border-radius: 15px;
+				box-shadow: 0px 10px 20px #808080;
+				-webkit-box-shadow: 0px 10px 20px #808080;
+				-moz-box-shadow: 0px 10px 20px #808080;
+				-khtml-box-shadow: 0px 10px 20px #808080;
+				filter: progid :DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')
+			}
+			.MathJax_Menu {
+				position: absolute;
+				background-color: white;
+				color: black;
+				width: auto;
+				padding: 2px;
+				border: 1px solid #CCCCCC;
+				margin: 0;
+				cursor: default;
+				font: menu;
+				text-align: left;
+				text-indent: 0;
+				text-transform: none;
+				line-height: normal;
+				letter-spacing: normal;
+				word-spacing: normal;
+				word-wrap: normal;
+				white-space: nowrap;
+				float: none;
+				z-index: 201;
+				box-shadow: 0px 10px 20px #808080;
+				-webkit-box-shadow: 0px 10px 20px #808080;
+				-moz-box-shadow: 0px 10px 20px #808080;
+				-khtml-box-shadow: 0px 10px 20px #808080;
+				filter: progid :DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')
+			}
+			.MathJax_MenuItem {
+				padding: 2px 2em;
+				background: transparent
+			}
+			.MathJax_MenuTitle {
+				background-color: #CCCCCC;
+				margin: -1px -1px 1px -1px;
+				text-align: center;
+				font-style: italic;
+				font-size: 80%;
+				color: #444444;
+				padding: 2px 0;
+				overflow: hidden
+			}
+			.MathJax_MenuArrow {
+				position: absolute;
+				right: .5em;
+				color: #666666
+			}
+			.MathJax_MenuActive .MathJax_MenuArrow {
+				color: white
+			}
+			.MathJax_MenuCheck {
+				position: absolute;
+				left: .7em
+			}
+			.MathJax_MenuRadioCheck {
+				position: absolute;
+				left: 1em
+			}
+			.MathJax_MenuLabel {
+				padding: 2px 2em 4px 1.33em;
+				font-style: italic
+			}
+			.MathJax_MenuRule {
+				border-top: 1px solid #CCCCCC;
+				margin: 4px 1px 0px
+			}
+			.MathJax_MenuDisabled {
+				color: GrayText
+			}
+			.MathJax_MenuActive {
+				background-color: Highlight;
+				color: HighlightText
+			}
+			.MathJax_Menu_Close {
+				position: absolute;
+				width: 31px;
+				height: 31px;
+				top: -15px;
+				left: -15px
+			}
+
+		</style>
+		<style type="text/css">
+			#MathJax_Zoom {
+				position: absolute;
+				background-color: #F0F0F0;
+				overflow: auto;
+				display: block;
+				z-index: 301;
+				padding: .5em;
+				border: 1px solid black;
+				margin: 0;
+				font-weight: normal;
+				font-style: normal;
+				text-align: left;
+				text-indent: 0;
+				text-transform: none;
+				line-height: normal;
+				letter-spacing: normal;
+				word-spacing: normal;
+				word-wrap: normal;
+				white-space: nowrap;
+				float: none;
+				box-shadow: 5px 5px 15px #AAAAAA;
+				-webkit-box-shadow: 5px 5px 15px #AAAAAA;
+				-moz-box-shadow: 5px 5px 15px #AAAAAA;
+				-khtml-box-shadow: 5px 5px 15px #AAAAAA;
+				filter: progid :DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true')
+			}
+			#MathJax_ZoomOverlay {
+				position: absolute;
+				left: 0;
+				top: 0;
+				z-index: 300;
+				display: inline-block;
+				width: 100%;
+				height: 100%;
+				border: 0;
+				padding: 0;
+				margin: 0;
+				background-color: white;
+				opacity: 0;
+				filter: alpha(opacity=0)
+			}
+			#MathJax_ZoomEventTrap {
+				position: absolute;
+				left: 0;
+				top: 0;
+				z-index: 302;
+				display: inline-block;
+				border: 0;
+				padding: 0;
+				margin: 0;
+				background-color: white;
+				opacity: 0;
+				filter: alpha(opacity=0)
+			}
+
+		</style>
+		<style type="text/css">
+			.MathJax_Preview {
+				color: #888
+			}
+			#MathJax_Message {
+				position: fixed;
+				left: 1em;
+				bottom: 1.5em;
+				background-color: #E6E6E6;
+				border: 1px solid #959595;
+				margin: 0px;
+				padding: 2px 8px;
+				z-index: 102;
+				color: black;
+				font-size: 80%;
+				width: auto;
+				white-space: nowrap
+			}
+			#MathJax_MSIE_Frame {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 0px;
+				z-index: 101;
+				border: 0px;
+				margin: 0px;
+				padding: 0px
+			}
+			.MathJax_Error {
+				color: #CC0000;
+				font-style: italic
+			}
+
+		</style>
+		<style type="text/css">
+			.MathJax_Display {
+				text-align: center;
+				margin: 1em 0em;
+				position: relative;
+				display: block;
+				width: 100%
+			}
+			.MathJax .merror {
+				background-color: #FFFF88;
+				color: #CC0000;
+				border: 1px solid #CC0000;
+				padding: 1px 3px;
+				font-style: normal;
+				font-size: 90%
+			}
+			#MathJax_Tooltip {
+				background-color: InfoBackground;
+				color: InfoText;
+				border: 1px solid black;
+				box-shadow: 2px 2px 5px #AAAAAA;
+				-webkit-box-shadow: 2px 2px 5px #AAAAAA;
+				-moz-box-shadow: 2px 2px 5px #AAAAAA;
+				-khtml-box-shadow: 2px 2px 5px #AAAAAA;
+				filter: progid :DXImageTransform.Microsoft.dropshadow(OffX=2, OffY=2, Color='gray', Positive='true');
+				padding: 3px 4px;
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: auto;
+				height: auto;
+				display: none
+			}
+			.MathJax {
+				display: inline;
+				font-style: normal;
+				font-weight: normal;
+				line-height: normal;
+				font-size: 100%;
+				font-size-adjust: none;
+				text-indent: 0;
+				text-align: left;
+				text-transform: none;
+				letter-spacing: normal;
+				word-spacing: normal;
+				word-wrap: normal;
+				white-space: nowrap;
+				float: none;
+				direction: ltr;
+				border: 0;
+				padding: 0;
+				margin: 0
+			}
+			.MathJax img, .MathJax nobr, .MathJax a {
+				border: 0;
+				padding: 0;
+				margin: 0;
+				max-width: none;
+				max-height: none;
+				vertical-align: 0;
+				line-height: normal;
+				text-decoration: none
+			}
+			img.MathJax_strut {
+				border: 0 !important;
+				padding: 0 !important;
+				margin: 0 !important;
+				vertical-align: 0 !important
+			}
+			.MathJax span {
+				display: inline;
+				position: static;
+				border: 0;
+				padding: 0;
+				margin: 0;
+				vertical-align: 0;
+				line-height: normal;
+				text-decoration: none
+			}
+			.MathJax nobr {
+				white-space: nowrap ! important
+			}
+			.MathJax img {
+				display: inline ! important;
+				float: none ! important
+			}
+			.MathJax_Processing {
+				visibility: hidden;
+				position: fixed;
+				width: 0;
+				height: 0;
+				overflow: hidden
+			}
+			.MathJax_Processed {
+				display: none !important
+			}
+			.MathJax_ExBox {
+				display: block;
+				overflow: hidden;
+				width: 1px;
+				height: 60ex
+			}
+			.MathJax .MathJax_EmBox {
+				display: block;
+				overflow: hidden;
+				width: 1px;
+				height: 60em
+			}
+			.MathJax .MathJax_HitBox {
+				cursor: text;
+				background: white;
+				opacity: 0;
+				filter: alpha(opacity=0)
+			}
+			.MathJax .MathJax_HitBox * {
+				filter: none;
+				opacity: 1;
+				background: transparent
+			}
+			#MathJax_Tooltip * {
+				filter: none;
+				opacity: 1;
+				background: transparent
+			}
+			@font-face {
+				font-family: MathJax_Main;
+				src: url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_Main-Regular.woff') format('woff'), url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_Main-Regular.otf') format('opentype')
+			}
+			@font-face {
+				font-family: MathJax_Main;
+				src: url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_Main-Bold.woff') format('woff'), url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_Main-Bold.otf') format('opentype');
+				font-weight: bold
+			}
+			@font-face {
+				font-family: MathJax_Main;
+				src: url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_Main-Italic.woff') format('woff'), url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_Main-Italic.otf') format('opentype');
+				font-style: italic
+			}
+			@font-face {
+				font-family: MathJax_Math;
+				src: url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_Math-Italic.woff') format('woff'), url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_Math-Italic.otf') format('opentype');
+				font-style: italic
+			}
+			@font-face {
+				font-family: MathJax_Caligraphic;
+				src: url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_Caligraphic-Regular.woff') format('woff'), url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_Caligraphic-Regular.otf') format('opentype')
+			}
+			@font-face {
+				font-family: MathJax_Size1;
+				src: url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_Size1-Regular.woff') format('woff'), url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_Size1-Regular.otf') format('opentype')
+			}
+			@font-face {
+				font-family: MathJax_Size2;
+				src: url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_Size2-Regular.woff') format('woff'), url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_Size2-Regular.otf') format('opentype')
+			}
+			@font-face {
+				font-family: MathJax_Size3;
+				src: url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_Size3-Regular.woff') format('woff'), url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_Size3-Regular.otf') format('opentype')
+			}
+			@font-face {
+				font-family: MathJax_Size4;
+				src: url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_Size4-Regular.woff') format('woff'), url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_Size4-Regular.otf') format('opentype')
+			}
+			.MathJax .noError {
+				vertical-align: ; font-size: 90%;
+				text-align: left;
+				color: black;
+				padding: 1px 3px;
+				border: 1px solid
+			}
+
+		</style>
+		<style type="text/css">
+			@font-face {
+				font-family: MathJax_AMS;
+				src: url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/woff/MathJax_AMS-Regular.woff') format('woff'), url('https://d3eoax9i5htok0.cloudfront.net/mathjax/latest/fonts/HTML-CSS/TeX/otf/MathJax_AMS-Regular.otf') format('opentype')
+			}
+
+		</style>
+
+	</head>
+
+	<body  onload="load()">
+
+		<div id="content">
+
+			<font size="+3">
+				<center>
+					CS 188
+				</center></font>
+			<br/>
+
+			<div class = "whole_Page" align="center" >
+
+				<font size="+3">
+					<center>
+						Particle Filtering
+					</center></font>
+
+				<br />
+				<font size="+2">
+					<center>
+						Question 3 (15 points)
+					</center></font>
+				<br />
+				<br />
+
+				In this question, we will use a particle filter to track the state of a robot that is lost in the map below.
+
+				<br />
+				<br />
+
+				<div class="pictureDiv">
+
+					<img src="http://particlefiltering.phpfogapp.com/newMap.png" width="375" height="225"  style="display:block; margin-left:auto; margin-right:auto;" >
+
+					<p>
+						The map where the robot will be placed
+					</p>
+				</div>
+				<p >
+
+					The robot's state is represented by an integer 1 &#8804 x &#8804 22 corresponding to the squares in the map. We will approximate our belief over this state with N = 15 particles.
+				</p>
+
+				<p>
+
+You have no control over the robot's actions, and the robot appears to be moving about randomly. You model the transition dynamics by assuming that the robot will stay in place, or move to any one of the neighboring squares, all with equal probability. For example, if the robot starts in state x<sub>t</sub>=3, it will move to state x<sub>t+1</sub>=2 with probability 1/3, x<sub>t+1</sub>=3 with probability 1/3, or x<sub>t+1</sub>=4 with probability 1/3. Similarly, if the robot starts in state 6, the possible next states are {5,6,7,21}, and each occurs with probability 1/4.
+
+				</p>
+
+				<p>
+					Each time step, a sensor on the robot gives a reading <span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-51-Frame" role="textbox" aria-readonly="true" style="">
+						<nobr>
+							<span class="math" id="MathJax-Span-526"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 5.971em; "><span style="position: absolute; clip: rect(1.422em 1000em 2.757em -0.471em); top: -2.339em; left: 0em; "><span class="mrow" id="MathJax-Span-527"><span class="msubsup" id="MathJax-Span-528"><span style="display: inline-block; position: relative; height: 0px; width: 0.998em; "><span style="position: absolute; clip: rect(1.492em 1000em 2.507em -0.471em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-529" style="font-family: MathJax_Math; font-style: italic; ">E<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.026em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.699em; "><span class="mi" id="MathJax-Span-530" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">t</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-531" style="font-family: MathJax_Main; padding-left: 0.278em; ">∈</span><span class="mo" id="MathJax-Span-532" style="font-family: MathJax_Main; padding-left: 0.278em; ">{</span><span class="mi" id="MathJax-Span-533" style="font-family: MathJax_Math; font-style: italic; ">H<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.057em; "></span></span><span class="mo" id="MathJax-Span-534" style="font-family: MathJax_Main; ">,</span><span class="mi" id="MathJax-Span-535" style="font-family: MathJax_Math; font-style: italic; padding-left: 0.167em; ">C<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.045em; "></span></span><span class="mo" id="MathJax-Span-536" style="font-family: MathJax_Main; ">,</span><span class="mi" id="MathJax-Span-537" style="font-family: MathJax_Math; font-style: italic; padding-left: 0.167em; ">T<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.12em; "></span></span><span class="mo" id="MathJax-Span-538" style="font-family: MathJax_Main; ">}</span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.245em; vertical-align: -0.342em; "></span></span>
+						</nobr></span>
+					<script type="math/tex" id="MathJax-Element-51">
+						E_t \in \{H,C,T\}
+					</script>
+					corresponding to the <i>type</i> of square the robot is in. The possible types are: <i>hallway </i>(H) for states bordered by two parallel walls (e.g. 2, 20, 21); <i>corner </i> (C) for states bordered by two orthogonal walls (e.g. 1, 8); and <i>tee </i>(T) for states bordered by one wall (e.g 6). The sensor's type measurements are not very reliable: they report the correct type with probability 1/2, but give erroneous type readings the rest of the time, with probability 1/4 for each of the two possible erroneous readings.
+				</p>
+				<br />
+
+				<font size="+1">
+					<center>
+						Question 3.1 (2 points)
+					</center></font>
+
+				<br />
+
+				<div  align="center" >
+
+					Fill in the sensor model below:
+					<div/>
+
+					<br />
+
+					<center>
+						<table border="1">
+							<tr>
+								<th>Sensor Reading</th>
+								<th>State Type</th>
+								<th>P(sensor reading | state type)</th>
+							</tr>
+							<tr>
+								<td>H</td>
+								<td>H</td>
+								<td>
+								<input class="numeric" type="text"  id = "Q_3_0_1"  size = "34" onblur = "unFocusRouter('Q_3_0_1', 1, 'guessSensorReadings')" tabindex="-1">
+								</td>
+
+							</tr>
+							<tr>
+								<td>C</td>
+								<td>H</td>
+								<td>
+								
+									<input type="text"  id = "Q_3_0_2"  size = "34" class="numeric"
+
+									onblur="unFocusRouter('Q_3_0_2', 2, 'guessSensorReadings')"/>
+									<br />
+								</td>
+							</tr>
+
+							<tr>
+								<td>T</td>
+								<td>H</td>
+								<td>
+									<input type="text"  class="numeric"  id = "Q_3_0_3"  size = "34" onblur="unFocusRouter('Q_3_0_3', 3, 'guessSensorReadings')"/>
+									<br />
+								</td>
+							</tr>
+
+							<tr>
+								<td>H</td>
+								<td>C</td>
+								<td>
+								
+									<input type="text" class="numeric"  id = "Q_3_0_4"  size = "34" onblur="unFocusRouter('Q_3_0_4', 4, 'guessSensorReadings')"/>
+									<br />
+								</td>
+
+							</tr>
+							<tr>
+								<td>C</td>
+								<td>C</td>
+								<td>
+								
+									<input type="text" class="numeric"  id = "Q_3_0_5"  size = "34" onblur="unFocusRouter('Q_3_0_5', 5, 'guessSensorReadings')"/>
+									<br />
+								</td>
+							</tr>
+
+							<tr>
+								<td>T</td>
+								<td>C</td>
+								<td>
+								
+									<input type="text" class="numeric"   id = "Q_3_0_6"  size = "34" onblur="unFocusRouter('Q_3_0_6', 6, 'guessSensorReadings')"/>
+									<br />
+								</td>
+							</tr>
+
+							<tr>
+								<td>H</td>
+								<td>T</td>
+								<td>
+								
+									<input type="text" class="numeric"  id = "Q_3_0_7"  size = "34" onblur="unFocusRouter('Q_3_0_7', 7, 'guessSensorReadings')"/>
+									<br />
+								</td>
+
+							</tr>
+							<tr>
+								<td>C</td>
+								<td>T</td>
+								<td>
+							
+									<input type="text" class="numeric"   id = "Q_3_0_8"  size = "34" onblur="unFocusRouter('Q_3_0_8', 8, 'guessSensorReadings')"/>
+									<br />
+								</td>
+							</tr>
+
+							<tr>
+								<td>T</td>
+								<td>T</td>
+								<td>
+							
+									<input type="text" class="numeric"  id = "Q_3_0_9"  size = "34" onblur="unFocusRouter('Q_3_0_9', 9, 'guessSensorReadings')"/>
+									<br />
+								</td>
+							</tr>
+
+						</table>
+					</center>
+
+					<br/>
+
+					<div  align="center" >
+
+
+						<p>
+Before we continue with the rest of the problem, let's quickly review how to do sampling. Let's say, for the sake of example, that we want to sample from a set of 4 events, {A,B,C,D}, which occur with corresponding probabilities {<span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-52-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-539"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 1.082em; "><span style="position: absolute; clip: rect(3.15em 1000em 4.329em -0.469em); top: -4em; left: 0em; "><span class="mrow" id="MathJax-Span-540"><span class="msubsup" id="MathJax-Span-541"><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-542" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.177em; left: 0.561em; "><span class="mi" id="MathJax-Span-543" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">A</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 4em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.071em; vertical-align: -0.244em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-52">P_A</script>,<span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-53-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-544"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 1.082em; "><span style="position: absolute; clip: rect(3.15em 1000em 4.317em -0.469em); top: -4em; left: 0em; "><span class="mrow" id="MathJax-Span-545"><span class="msubsup" id="MathJax-Span-546"><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-547" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.561em; "><span class="mi" id="MathJax-Span-548" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">B</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 4em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.058em; vertical-align: -0.231em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-53">P_B</script>,<span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-54-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-549"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 1.082em; "><span style="position: absolute; clip: rect(3.15em 1000em 4.337em -0.469em); top: -4em; left: 0em; "><span class="mrow" id="MathJax-Span-550"><span class="msubsup" id="MathJax-Span-551"><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-552" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.185em; left: 0.561em; "><span class="mi" id="MathJax-Span-553" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">C<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.032em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 4em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.08em; vertical-align: -0.252em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-54">P_C</script>,<span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-55-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-554"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 1.194em; "><span style="position: absolute; clip: rect(3.15em 1000em 4.317em -0.469em); top: -4em; left: 0em; "><span class="mrow" id="MathJax-Span-555"><span class="msubsup" id="MathJax-Span-556"><span style="display: inline-block; position: relative; height: 0px; width: 1.194em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-557" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.561em; "><span class="mi" id="MathJax-Span-558" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">D</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 4em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.058em; vertical-align: -0.231em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-55">P_D</script>}. In order to generate samples, we form the <i>cumulative</i> distribution, given by {<span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-56-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-559"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 0.446em; "><span style="position: absolute; clip: rect(1.506em 1000em 2.529em -0.463em); top: -2.339em; left: 0em; "><span class="mrow" id="MathJax-Span-560"><span class="mn" id="MathJax-Span-561" style="font-family: MathJax_Main; ">0</span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 0.896em; vertical-align: -0.087em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-56">0</script>,<span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-57-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-562"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 1.082em; "><span style="position: absolute; clip: rect(3.15em 1000em 4.329em -0.469em); top: -4em; left: 0em; "><span class="mrow" id="MathJax-Span-563"><span class="msubsup" id="MathJax-Span-564"><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-565" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.177em; left: 0.561em; "><span class="mi" id="MathJax-Span-566" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">A</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 4em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.071em; vertical-align: -0.244em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-57">P_A</script>,<span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-58-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-567"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 3.181em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.669em -0.469em); top: -2.339em; left: 0em; "><span class="mrow" id="MathJax-Span-568"><span class="msubsup" id="MathJax-Span-569"><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-570" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.177em; left: 0.561em; "><span class="mi" id="MathJax-Span-571" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">A</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-572" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="msubsup" id="MathJax-Span-573" style="padding-left: 0.222em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-574" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.561em; "><span class="mi" id="MathJax-Span-575" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">B</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.071em; vertical-align: -0.244em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-58">P_A+P_B</script>,<span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-59-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-576"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 5.357em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.676em -0.469em); top: -2.339em; left: 0em; "><span class="mrow" id="MathJax-Span-577"><span class="msubsup" id="MathJax-Span-578"><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-579" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.177em; left: 0.561em; "><span class="mi" id="MathJax-Span-580" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">A</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-581" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="msubsup" id="MathJax-Span-582" style="padding-left: 0.222em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-583" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.561em; "><span class="mi" id="MathJax-Span-584" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">B</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-585" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="msubsup" id="MathJax-Span-586" style="padding-left: 0.222em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-587" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.185em; left: 0.561em; "><span class="mi" id="MathJax-Span-588" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">C<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.032em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.08em; vertical-align: -0.252em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-59">P_A+P_B+P_C</script>,<span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-60-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-589"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 0.446em; "><span style="position: absolute; clip: rect(1.506em 1000em 2.507em -0.419em); top: -2.339em; left: 0em; "><span class="mrow" id="MathJax-Span-590"><span class="mn" id="MathJax-Span-591" style="font-family: MathJax_Main; ">1</span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 0.871em; vertical-align: -0.063em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-60">1</script>}. This forms bins on the real line between 0 and 1, as shown below. We then generate samples from a uniform distribution and pick A,B,C,or D based on which bin the sample lands in. The process is illustrated in the diagram below. If the random draw <span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-61-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-592"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 0.8em; "><span style="position: absolute; clip: rect(3.391em 1000em 4.317em -0.481em); top: -4em; left: 0em; "><span class="mrow" id="MathJax-Span-593"><span class="msubsup" id="MathJax-Span-594"><span style="display: inline-block; position: relative; height: 0px; width: 0.8em; "><span style="position: absolute; clip: rect(1.73em 1000em 2.518em -0.481em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-595" style="font-family: MathJax_Math; font-style: italic; ">r</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.391em; "><span class="mn" id="MathJax-Span-596" style="font-size: 70.7%; font-family: MathJax_Main; ">1</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span></span><span style="display: inline-block; width: 0px; height: 4em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 0.788em; vertical-align: -0.231em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-61">r_1</script> uniformly chosen from [0,1] lands <span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-62-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-597"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 6.027em; "><span style="position: absolute; clip: rect(1.422em 1000em 2.757em -0.418em); top: -2.339em; left: 0em; "><span class="mrow" id="MathJax-Span-598"><span class="mo" id="MathJax-Span-599" style="font-family: MathJax_Main; ">∈</span><span class="mo" id="MathJax-Span-600" style="font-family: MathJax_Main; padding-left: 0.278em; ">[</span><span class="msubsup" id="MathJax-Span-601"><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-602" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.177em; left: 0.561em; "><span class="mi" id="MathJax-Span-603" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">A</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-604" style="font-family: MathJax_Main; ">,</span><span class="msubsup" id="MathJax-Span-605" style="padding-left: 0.167em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-606" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.177em; left: 0.561em; "><span class="mi" id="MathJax-Span-607" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">A</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-608" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="msubsup" id="MathJax-Span-609" style="padding-left: 0.222em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-610" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.561em; "><span class="mi" id="MathJax-Span-611" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">B</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-612" style="font-family: MathJax_Main; ">]</span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.245em; vertical-align: -0.342em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-62">\in [P_A, P_A+P_B]</script>, then the resulting sample is B. Similarly, <span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-63-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-613"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 11.384em; "><span style="position: absolute; clip: rect(1.422em 1000em 2.757em -0.481em); top: -2.339em; left: 0em; "><span class="mrow" id="MathJax-Span-614"><span class="msubsup" id="MathJax-Span-615"><span style="display: inline-block; position: relative; height: 0px; width: 0.8em; "><span style="position: absolute; clip: rect(1.73em 1000em 2.518em -0.481em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-616" style="font-family: MathJax_Math; font-style: italic; ">r</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.391em; "><span class="mn" id="MathJax-Span-617" style="font-size: 70.7%; font-family: MathJax_Main; ">2</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-618" style="font-family: MathJax_Main; padding-left: 0.278em; ">∈</span><span class="mo" id="MathJax-Span-619" style="font-family: MathJax_Main; padding-left: 0.278em; ">[</span><span class="msubsup" id="MathJax-Span-620"><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-621" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.177em; left: 0.561em; "><span class="mi" id="MathJax-Span-622" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">A</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-623" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="msubsup" id="MathJax-Span-624" style="padding-left: 0.222em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-625" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.561em; "><span class="mi" id="MathJax-Span-626" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">B</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-627" style="font-family: MathJax_Main; ">,</span><span class="msubsup" id="MathJax-Span-628" style="padding-left: 0.167em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-629" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.177em; left: 0.561em; "><span class="mi" id="MathJax-Span-630" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">A</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-631" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="msubsup" id="MathJax-Span-632" style="padding-left: 0.222em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-633" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.561em; "><span class="mi" id="MathJax-Span-634" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">B</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-635" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="msubsup" id="MathJax-Span-636" style="padding-left: 0.222em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-637" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.185em; left: 0.561em; "><span class="mi" id="MathJax-Span-638" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">C<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.032em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-639" style="font-family: MathJax_Main; ">]</span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.245em; vertical-align: -0.342em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-63">r_2 \in [P_A+P_B, P_A+P_B+P_C]</script> would correspond to C, and <span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-64-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-640"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 11.384em; "><span style="position: absolute; clip: rect(1.422em 1000em 2.757em -0.481em); top: -2.339em; left: 0em; "><span class="mrow" id="MathJax-Span-641"><span class="msubsup" id="MathJax-Span-642"><span style="display: inline-block; position: relative; height: 0px; width: 0.8em; "><span style="position: absolute; clip: rect(1.73em 1000em 2.518em -0.481em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-643" style="font-family: MathJax_Math; font-style: italic; ">r</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.391em; "><span class="mn" id="MathJax-Span-644" style="font-size: 70.7%; font-family: MathJax_Main; ">3</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-645" style="font-family: MathJax_Main; padding-left: 0.278em; ">∈</span><span class="mo" id="MathJax-Span-646" style="font-family: MathJax_Main; padding-left: 0.278em; ">[</span><span class="msubsup" id="MathJax-Span-647"><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-648" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.177em; left: 0.561em; "><span class="mi" id="MathJax-Span-649" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">A</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-650" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="msubsup" id="MathJax-Span-651" style="padding-left: 0.222em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-652" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.561em; "><span class="mi" id="MathJax-Span-653" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">B</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-654" style="font-family: MathJax_Main; ">,</span><span class="msubsup" id="MathJax-Span-655" style="padding-left: 0.167em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-656" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.177em; left: 0.561em; "><span class="mi" id="MathJax-Span-657" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">A</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-658" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="msubsup" id="MathJax-Span-659" style="padding-left: 0.222em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-660" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.189em; left: 0.561em; "><span class="mi" id="MathJax-Span-661" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">B</span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-662" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="msubsup" id="MathJax-Span-663" style="padding-left: 0.222em; "><span style="display: inline-block; position: relative; height: 0px; width: 1.082em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.507em -0.469em); top: -2.339em; left: 0em; "><span class="mi" id="MathJax-Span-664" style="font-family: MathJax_Math; font-style: italic; ">P<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.109em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span><span style="position: absolute; top: -2.185em; left: 0.561em; "><span class="mi" id="MathJax-Span-665" style="font-size: 70.7%; font-family: MathJax_Math; font-style: italic; ">C<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.032em; "></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span></span><span class="mo" id="MathJax-Span-666" style="font-family: MathJax_Main; ">]</span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.245em; vertical-align: -0.342em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-64">r_3 \in [P_A+P_B, P_A+P_B+P_C]</script> would also correspond to C.
+</p>
+						<br/>
+
+						<div class = "pictureDiv">
+
+							<img src="https://cs188.org/assets/hmm_pf_vpi/sampling.png" width="500" height="200"  style="display:block; margin-left:auto; margin-right:auto;"  />
+
+							<p>
+
+								Model for sampling
+
+							</p>
+
+						</div>
+						<br/>
+						<br/>
+
+						<font size="+1">
+							<center>
+								Question 3.2 (3 points)
+							</center></font>
+
+						<p >
+
+Each particle has been assigned a random draw that corresponds to a position on the board. The spaces go in ascending order and each square has equal probability. Please fill in the square positions of the first five particles. Once you fill in a square, a green border will appear if you get it right and a red border will appear if you got the answer incorrect. Please note, to discourage spamming answers, after every incorrect answer, you will have to wait a brief period of time to try again. Once you correctly determine the first five positions, the remaining 10 will be filled in for you. 						</p>
+
+						<div  id = "hiddenTimer">
+
+							<p id = "timer_Q_1"></p>
+						</div>
+
+						<div>
+							<table border="1" style="float:left">
+								<tr>
+									<th>Particle</th>
+									<th>Random Draw</th>
+									<th>Position</th>
+								</tr>
+
+								<tr>
+
+									<td>p1</td>
+									<td id="Q_3_1_1_R"></td>
+									<td>
+									<input type="text" class="numeric" id = "Q_3_1_1_I" onblur="initialParticleUnFocus(1)" disabled="true">
+									</td>
+								</tr>
+								<tr>
+									<td> p2</td>
+									<td id="Q_3_1_2_R"></td>
+									<td>
+									<input type="text" class="numeric" id = "Q_3_1_2_I" onblur="initialParticleUnFocus(2)" disabled="true">
+									</td>
+
+								</tr>
+								<tr>
+									<td>p3</td>
+									<td id="Q_3_1_3_R"></td>
+									<td>
+									<input type="text" class="numeric" id = "Q_3_1_3_I"    onblur="initialParticleUnFocus(3)" disabled="true">
+									</td>
+								</tr>
+								<tr>
+									<td>p4</td>
+									<td id="Q_3_1_4_R"></td>
+									<td>
+									<input type="text" class="numeric" id = "Q_3_1_4_I"    onblur="initialParticleUnFocus(4)" disabled="true">
+									</td>
+								</tr>
+								<tr>
+									<td>p5</td>
+									<td id="Q_3_1_5_R"></td>
+									<td>
+									<input type="text" class="numeric" id = "Q_3_1_5_I"     onblur="initialParticleUnFocus(5)" disabled="true">
+									</td>
+
+								</tr>
+								<tr>
+									<td>p6</td>
+									<td id="Q_3_1_6_R"></td>
+									<td id="Q_3_1_6_I"></td>
+								</tr>
+								<tr>
+									<td>p7</td>
+									<td id="Q_3_1_7_R"></td>
+									<td id="Q_3_1_7_I"></td>
+								</tr>
+								<tr>
+									<td>p8</td>
+									<td id="Q_3_1_8_R"></td>
+									<td id="Q_3_1_8_I"></td>
+								</tr>
+								<tr>
+									<td>p9</td>
+									<td id="Q_3_1_9_R"></td>
+									<td id="Q_3_1_9_I"></td>
+								</tr>
+								<tr>
+									<td>p10</td>
+									<td id="Q_3_1_10_R"></td>
+									<td id="Q_3_1_10_I"></td>
+								</tr>
+								<tr>
+									<td>p11</td>
+									<td id="Q_3_1_11_R"></td>
+									<td id="Q_3_1_11_I"></td>
+								</tr>
+								<tr>
+									<td>p12</td>
+									<td id="Q_3_1_12_R"></td>
+									<td id="Q_3_1_12_I"></td>
+								</tr>
+								<tr>
+									<td>p13</td>
+									<td id="Q_3_1_13_R"></td>
+									<td id="Q_3_1_13_I"></td>
+								</tr>
+								<tr>
+									<td>p14</td>
+									<td id="Q_3_1_14_R"></td>
+									<td id="Q_3_1_14_I"></td>
+								</tr>
+								<tr>
+									<td>p15</td>
+									<td id="Q_3_1_15_R"></td>
+									<td id="Q_3_1_15_I"></td>
+								</tr>
+							</table>
+
+							<div class = "pictureDiv">
+								<canvas id="myCanvas" width="600" height="400" style="border:1px solid #c3c3c3;">
+									Your browser does not support the canvas element.
+								</canvas>
+								<p>
+									Will display the initial particle placement
+
+								</p>
+							</div>
+						</div>
+
+						<br/>
+
+						<script type="text/javascript">
+							var c = document.getElementById("myCanvas");
+							var ctx = c.getContext("2d");
+							var img = new Image();
+							img.onload = function() {
+								ctx.drawImage(img, imageOffsetX, imageOffsetY, imageWidth, imageHeight);
+
+							};
+							img.src = "http://particlefiltering.phpfogapp.com/newMap.png";
+
+						</script>
+
+						<br/>
+						<br/>
+
+						<font size="+1">
+							<center>
+								Question 3.3 (3 points)
+							</center></font>
+
+						<p>
+
+							The map on the bottom left is the same as in question 3.2 and indicates the position at T=0.  The map on the bottom right will indicate the position of the particles at T=1. In the table the T=0 position is giver, along with the random draw and transition model. The red and green borders and penalty for spamming are the same as question 3.1 and this will be true for the rest of the assignment. Once you correctly determine the first five particle locations, the remaining 10 will be filled in and a brief animation will play. Please not, the transition models for the last 10 particles have been omitted due to spacing issues.
+						</p>
+
+						<br />
+
+						<div>
+							<table border="1" >
+
+								<tr>
+									<td>Particle</td>
+									<td>1</td>
+									<td>2</td>
+									<td>3</td>
+									<td>4</td>
+									<td>5</td>
+									<td>6</td>
+									<td>7</td>
+									<td>8</td>
+									<td>9</td>
+									<td>10</td>
+									<td>11</td>
+									<td>12</td>
+									<td>13</td>
+									<td>14</td>
+									<td>15</td>
+
+								</tr>
+								<tr>
+									<td> x<sub>t(0)</sub></td>
+									<td id ="Q_3_2_1_O"></td>
+									<td id ="Q_3_2_2_O"></td>
+									<td id ="Q_3_2_3_O"></td>
+									<td id ="Q_3_2_4_O"></td>
+									<td id ="Q_3_2_5_O"></td>
+									<td id ="Q_3_2_6_O"></td>
+									<td id ="Q_3_2_7_O"></td>
+									<td id ="Q_3_2_8_O"></td>
+									<td id ="Q_3_2_9_O"></td>
+									<td id ="Q_3_2_10_O"></td>
+									<td id ="Q_3_2_11_O"></td>
+									<td id ="Q_3_2_12_O"></td>
+									<td id ="Q_3_2_13_O"></td>
+									<td id ="Q_3_2_14_O"></td>
+									<td id ="Q_3_2_15_O"></td>
+
+								</tr>
+
+								<tr>
+									<td> Model </td>
+									<td id ="Q_3_2_1_M"><canvas width="96" height="20" id="Q_3_2_1_C">
+
+									</canvas></td><td id ="Q_3_2_2_M"><canvas width="96" height="20" id="Q_3_2_2_C">
+
+									</canvas></td><td id ="Q_3_2_3_M"><canvas width="96" height="20" id="Q_3_2_3_C">
+
+									</canvas></td><td id ="Q_3_2_4_M"><canvas width="96" height="20" id="Q_3_2_4_C">
+
+									</canvas></td><td id ="Q_3_2_5_M"><canvas width="96" height="20" id="Q_3_2_5_C">
+
+									</canvas></td><td id ="Q_3_2_6_M"></td><td id ="Q_3_2_7_M"></td><td id ="Q_3_2_8_M"></td><td id ="Q_3_2_9_M"></td><td id ="Q_3_2_10_M"></td><td id ="Q_3_2_11_M"></td><td id ="Q_3_2_12_M"></td><td id ="Q_3_2_13_M"></td><td id ="Q_3_2_14_M"></td><td id ="Q_3_2_15_M"></td>
+								</tr>
+
+								<tr>
+									<td>Random Draw</td>
+
+									<td id="Q_3_2_1_R"></td>
+									<td id="Q_3_2_2_R"></td>
+									<td id="Q_3_2_3_R"></td>
+									<td id="Q_3_2_4_R"></td>
+									<td id="Q_3_2_5_R"></td>
+									<td id="Q_3_2_6_R"></td>
+									<td id="Q_3_2_7_R"></td>
+									<td id="Q_3_2_8_R"></td>
+									<td id="Q_3_2_9_R"></td>
+									<td id="Q_3_2_10_R"></td>
+									<td id="Q_3_2_11_R"></td>
+									<td id="Q_3_2_12_R"></td>
+									<td id="Q_3_2_13_R"></td>
+									<td id="Q_3_2_14_R"></td>
+									<td id="Q_3_2_15_R"></td>
+
+								</tr>
+
+								<tr>
+									<td>x<sub>t(1)</sub></td>
+									<td>
+									<input type="text"  class="numeric" id = "Q_3_2_1_I" size="10" onblur="timeStepParticleUnFocus(1)" disabled="true">
+									</td><td>
+									<input type="text" class="numeric" id = "Q_3_2_2_I" size="10" onblur="timeStepParticleUnFocus(2)" disabled="true">
+									</td><td>
+									<input type="text" class="numeric" id = "Q_3_2_3_I" size="10" onblur="timeStepParticleUnFocus(3)" disabled="true">
+									</td><td>
+									<input type="text" class="numeric" id = "Q_3_2_4_I" size="10" onblur="timeStepParticleUnFocus(4)" disabled="true">
+									</td><td>
+									<input type="text" class="numeric" id = "Q_3_2_5_I" size="10" onblur="timeStepParticleUnFocus(5)" disabled="true">
+									</td>
+									<td id = "Q_3_2_6_I" ></td>
+
+									<td id = "Q_3_2_7_I" ></td>
+									<td id = "Q_3_2_8_I" ></td>
+									<td id = "Q_3_2_9_I" ></td>
+									<td id = "Q_3_2_10_I" ></td>
+									<td id = "Q_3_2_11_I" ></td>
+									<td id = "Q_3_2_12_I" ></td>
+									<td id = "Q_3_2_13_I" ></td>
+									<td id = "Q_3_2_14_I" ></td>
+									<td id = "Q_3_2_15_I" ></td>
+
+								</tr>
+
+							</table>
+						</div>
+
+						<br>
+
+						<br>
+						<div style="height: 300px">
+
+							<div class = "pictureDiv" style="float: left">
+
+								<canvas id="myCanvas2" width="450" height="300" style="border:1px solid #c3c3c3;">
+									Your browser does not support the canvas element.
+								</canvas>
+
+								<p>
+									Displays the particles at T=0
+
+								</p>
+							</div>
+
+							<div class = "pictureDiv" style="float: right" >
+
+								<canvas id="myCanvasTimeStep1" width="450" height="300" style="border:1px solid #c3c3c3;">
+									Your browser does not support the canvas element.
+								</canvas>
+
+								<p>
+									Will display the particles at T=1
+
+								</p>
+							</div>
+
+						</div>
+
+						<br/>
+
+						<script type="text/javascript">
+							var canvasOriginal1 = document.getElementById("myCanvas2");
+							var ctxOriginal1 = canvasOriginal1.getContext("2d");
+							var imgO1 = new Image();
+
+							imgO1.src = "http://particlefiltering.phpfogapp.com/newMap.png";
+
+							imgO1.onload = function() {
+								ctxOriginal1.drawImage(imgO1, imageOffsetX, imageOffsetY, 450, 300);
+
+							};
+
+						</script>
+
+						<script type="text/javascript">
+							var canvas2 = document.getElementById("myCanvasTimeStep1");
+							var ctx2 = canvas2.getContext("2d");
+							var img2 = new Image();
+
+							img2.onload = function() {
+								ctx2.drawImage(img2, imageOffsetX, imageOffsetY, 450, 300);
+
+							};
+							img2.src = "http://particlefiltering.phpfogapp.com/newMap.png";
+
+						</script>
+						<br />
+
+						<br />
+
+						<font size="+1">
+							<center>
+								Question 3.4 (3 points)
+							</center></font>
+						<p>
+							What is the current belief probability of each square based on your current belief on where the robot is?
+						</p>
+
+						<table border="1">
+							<tr>
+								<th>Square Tile</th>
+								<th>Prob</th>
+								<th>Square Tile</th>
+								<th>Prob</th>
+								<th>Square Tile</th>
+								<th>Prob</th>
+							</tr>
+
+							<tr>
+
+								<td>1</td>
+								<td>
+								<input type="text" class="numeric"   id = "Q_3_4_1"  size = "4" onblur="unFocusRouter('Q_3_4_1', 1, 'guessAllSquareProb')" disabled="true"/>
+								</td>
+								<td>8</td>
+								<td id = "Q_3_4_8"></td>
+								<td>15</td>
+								<td id = "Q_3_4_15"></td>
+
+							</tr>
+
+							<tr>
+
+								<td>2</td>
+								<td>
+								<input type="text" class="numeric"   id = "Q_3_4_2"  size = "4" onblur="unFocusRouter('Q_3_4_2', 2, 'guessAllSquareProb')" disabled="true"/>
+								</td>
+								<td>9</td>
+								<td id = "Q_3_4_9"></td>
+								<td>16</td>
+								<td id = "Q_3_4_16"></td>
+
+							</tr>
+
+							<tr>
+
+								<td>3</td>
+								<td>
+								<input type="text"  class="numeric"  id = "Q_3_4_3"  size = "4" onblur="unFocusRouter('Q_3_4_3', 3, 'guessAllSquareProb')" disabled="true"/>
+								</td>
+								<td>10</td>
+								<td id = "Q_3_4_10"></td>
+								<td>17</td>
+								<td id = "Q_3_4_17"></td>
+
+							</tr>
+
+							<tr>
+
+								<td>4</td>
+								<td>
+								<input type="text" class="numeric"  id = "Q_3_4_4"  size = "4" onblur="unFocusRouter('Q_3_4_4', 4, 'guessAllSquareProb')" disabled="true"/>
+								</td>
+								<td>11</td>
+								<td id = "Q_3_4_11"></td>
+								<td>18</td>
+								<td id = "Q_3_4_18"></td>
+							</tr>
+
+							<tr>
+
+								<td>5</td>
+								<td>
+								<input type="text" class="numeric"  id = "Q_3_4_5"  size = "4" onblur="unFocusRouter('Q_3_4_5', 5, 'guessAllSquareProb')" disabled="true"/>
+								</td>
+								<td>12</td>
+								<td id = "Q_3_4_12"></td>
+								<td>19</td>
+								<td id = "Q_3_4_19"></td>
+
+							</tr>
+
+							<tr>
+
+								<td>6</td>
+								<td id = "Q_3_4_6" ></td>
+								<td>13</td>
+								<td id = "Q_3_4_13" ></td>
+								<td>20</td>
+								<td id = "Q_3_4_20" ></td>
+
+							</tr>
+
+							<tr>
+
+								<td>7</td>
+								<td id = "Q_3_4_7" ></td>
+								<td>14</td>
+								<td id = "Q_3_4_14"></td>
+								<td>21</td>
+								<td  id = "Q_3_4_21"></td>
+
+							</tr>
+
+							<tr>
+
+								<td>22</td>
+								<td id = "Q_3_4_22"></td>
+
+							</tr>
+
+						</table>
+
+						<br />
+
+						<font size="+1">
+							<center>
+								Question 3.5 (5 points)
+							</center></font>
+
+						<p id = "dds">
+
+						</p>
+
+						<p>
+							Please use this reading to determine the weight, normalized weight, and cumulative weight for each particle. The map on the left indicates the particles at T=1. The map on the right will fill as you enter the weights of the particles. As you fill in the cumulative weight, a representation of the transition model you are building for resampling will appear under the maps.
+						</p>
+
+						<div>
+
+							<table border="1">
+								<tr>
+									<th>particle</th>
+									<th>1</th>
+									<th>2</th>
+									<th>3</th>
+									<th>4</th>
+									<th>5</th>
+									<th>6</th>
+									<th>7</th>
+									<th>8</th>
+									<th>9</th>
+									<th>10</th>
+									<th>11</th>
+									<th>12</th>
+									<th>13</th>
+									<th>14</th>
+									<th>15</th>
+
+								</tr>
+
+								<tr>
+
+									<td>Weight</td>
+
+									<td>
+									<input type="text"  id = "Q_3_5_1_W" class="numeric"  size = "5" onclick="maybe2(1, true)" onblur="unFocusRouter('Q_3_5_1_W', 1, 'guessWeigth')"  disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  id = "Q_3_5_2_W" class="numeric" size = "5"  onclick="maybe2(2, true)" onblur="unFocusRouter('Q_3_5_2_W', 2, 'guessWeigth')" disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  id = "Q_3_5_3_W" class="numeric" size = "5" onclick="maybe2(3, true)"  onblur="unFocusRouter('Q_3_5_3_W', 3, 'guessWeigth')" disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  id = "Q_3_5_4_W" class="numeric" size = "5" onclick="maybe2(4, true)"  onblur="unFocusRouter('Q_3_5_4_W', 4, 'guessWeigth')" disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  id = "Q_3_5_5_W" class="numeric" size = "5" onclick="maybe2(5, true)"  onblur="unFocusRouter('Q_3_5_5_W', 5, 'guessWeigth')" disabled="true"/>
+									</td>
+									<td id = "Q_3_5_6_W"></td>
+									<td id = "Q_3_5_7_W"></td>
+									<td id = "Q_3_5_8_W"></td>
+									<td id = "Q_3_5_9_W"></td>
+									<td id = "Q_3_5_10_W"></td>
+									<td id = "Q_3_5_11_W"></td>
+									<td id = "Q_3_5_12_W"></td>
+									<td id = "Q_3_5_13_W"></td>
+									<td id = "Q_3_5_14_W"></td>
+									<td id = "Q_3_5_15_W"></td>
+
+								</tr>
+
+								<tr>
+
+									<td>Normalized Weight</td>
+									<td>
+									<input type="text"  id = "Q_3_5_1_N" class="numeric" size = "5" onclick="maybe2(1, true, false)" onblur ="unFocusRouter('Q_3_5_1_N', 1, 'guessNormalizedWeigth')" disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  id = "Q_3_5_2_N" class="numeric" size = "5" onclick="maybe2(2, true, false)" onblur ="unFocusRouter('Q_3_5_2_N', 2, 'guessNormalizedWeigth')" disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  id = "Q_3_5_3_N" class="numeric" size = "5" onclick="maybe2(3, true, false)" onblur ="unFocusRouter('Q_3_5_3_N', 3, 'guessNormalizedWeigth')" disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  id = "Q_3_5_4_N" class="numeric" size = "5" onclick="maybe2(4, true, false)" onblur ="unFocusRouter('Q_3_5_4_N', 4, 'guessNormalizedWeigth')" disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  id = "Q_3_5_5_N" class="numeric" size = "5" onclick="maybe2(5, true, false)" onblur ="unFocusRouter('Q_3_5_5_N', 5, 'guessNormalizedWeigth')" disabled="true"/>
+									</td>
+									<td id = "Q_3_5_6_N"></td>
+									<td id = "Q_3_5_7_N"></td>
+									<td id = "Q_3_5_8_N"></td>
+									<td id = "Q_3_5_9_N"></td>
+									<td id = "Q_3_5_10_N"></td>
+									<td id = "Q_3_5_11_N"></td>
+									<td id = "Q_3_5_12_N"></td>
+									<td id = "Q_3_5_13_N"></td>
+									<td id = "Q_3_5_14_N"></td>
+									<td id = "Q_3_5_15_N"></td>
+
+								</tr>
+
+								<tr>
+
+									<td>Cumulative Weight</td>
+									<td>
+									<input type="text"   onclick="maybe2(1, true)" class="numeric" id = "Q_3_5_1_C"  size = "5" onblur="barValueChange(1)"  disabled="true"/>
+									</td>
+									<td>
+									<input type="text"   onclick="maybe2(2, true)" class="numeric" id = "Q_3_5_2_C"  size = "5" onblur="barValueChange(2)" disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  onclick="maybe2(3, true)" class="numeric" id = "Q_3_5_3_C"  size = "5" onblur="barValueChange(3)" disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  onclick="maybe2(4, true)" class="numeric" id = "Q_3_5_4_C"  size = "5" onblur="barValueChange(4)" disabled="true"/>
+									</td>
+									<td>
+									<input type="text"  onclick="maybe2(5, true)" class="numeric" id = "Q_3_5_5_C"  size = "5" onblur="barValueChange(5)" disabled="true"/>
+									</td>
+									<td
+									id = "Q_3_5_6_C" ></td>
+									<td
+									id = "Q_3_5_7_C" ></td>
+									<td
+									id = "Q_3_5_8_C"  ></td>
+									<td
+									id = "Q_3_5_9_C"  ></td>
+									<td
+									id = "Q_3_5_10_C" ></td>
+									<td
+									id = "Q_3_5_11_C"  ></td>
+									<td
+									id = "Q_3_5_12_C"  ></td>
+									<td
+									id = "Q_3_5_13_C"  ></td>
+									<td
+									id = "Q_3_5_14_C" ></td>
+									<td
+									id = "Q_3_5_15_C"  ></td>
+
+								</tr>
+
+							</table>
+						</div>
+						<br/>
+
+						<div style="height: 330px">
+							<div style="float: left"  class="pictureDiv">
+
+								<canvas id="myCanvasTimeStep2" width="450" height="300" style="border:1px solid #c3c3c3;  " ></canvas>
+
+								<p>
+									Particles at T=1
+								</p>
+								<script type="text/javascript">
+									var miniCanvas = document.getElementById("myCanvasTimeStep2");
+									var mctx = miniCanvas.getContext("2d");
+									var imgm = new Image();
+
+									imgm.onload = function() {
+										mctx.drawImage(img, 0, 0, 450, 300);
+
+									};
+									imgm.src = "http://particlefiltering.phpfogapp.com/newMap.png";
+
+								</script>
+
+							</div>
+							<div style="float: right" class="pictureDiv">
+
+								<canvas id="myCanvasWeighted1" width="450" height="300" style="border:1px solid #c3c3c3;  " ></canvas>
+								<p>
+									Particles with adjusted weights
+								</p>
+
+								<script type="text/javascript">
+									var myCanvasWeighted1 = document.getElementById("myCanvasWeighted1");
+									var myCanvasWeighted1Context = myCanvasWeighted1.getContext("2d");
+									var imgmW2 = new Image();
+
+									imgmW2.onload = function() {
+										myCanvasWeighted1Context.drawImage(imgmW2, 0, 0, 450, 300);
+
+									};
+									imgmW2.src = "http://particlefiltering.phpfogapp.com/newMap.png";
+
+								</script>
+
+							</div>
+
+						</div>
+
+						<canvas id="myCanvasLong" width="890" height="30" style="border:1px solid #c3c3c3;"></canvas>
+
+						<br />
+
+						<font size="+1">
+							<center>
+								Question 3.6 (3 points)
+							</center></font>
+
+						<p>
+
+							During re-sampling, each particle with be sampled based on a transition model and will be assigned a new particle. Using the transition model you built with the cumulative weights, use the random draw to determine what the first 5 particles will be re-assigned to. The map on the left displays the particles with their new weights based on the evidence, modeled by your transition model. The map on the right will display the particles after they are re-sampled.
+
+						</p>
+
+						<div id="ha">
+							<table border="1">
+								<tr>
+									<th>Particle</th>
+									<th>P1</th>
+									<th>P2</th>
+									<th>P3</th>
+									<th>P4</th>
+									<th>P5</th>
+									<th>P6</th>
+									<th>P7</th>
+									<th>P8</th>
+									<th>P9</th>
+									<th>P10</th>
+									<th>P11</th>
+									<th>P12</th>
+									<th>P13</th>
+									<th>P14</th>
+									<th>P15</th>
+
+								</tr>
+
+								<tr>
+
+									<td>Random Draw</td>
+									<td id="Q_3_6_1_R"></td>
+									<td id="Q_3_6_2_R"></td>
+									<td id="Q_3_6_3_R"></td>
+									<td id="Q_3_6_4_R"></td>
+									<td id="Q_3_6_5_R"></td>
+									<td id="Q_3_6_6_R"></td>
+									<td id="Q_3_6_7_R"></td>
+									<td id="Q_3_6_8_R"></td>
+									<td id="Q_3_6_9_R"></td>
+									<td id="Q_3_6_10_R"></td>
+									<td id="Q_3_6_11_R"></td>
+									<td id="Q_3_6_12_R"></td>
+									<td id="Q_3_6_13_R"></td>
+									<td id="Q_3_6_14_R"></td>
+									<td id="Q_3_6_15_R"></td>
+
+								</tr>
+								<tr>
+									<td>New Particle</td>
+									<td>
+									<input type="text" class="numeric"  id = "Q_3_6_1_I" onblur="unFocusRouter('Q_3_6_1_I', 1, 'guessreSampleParticleIndex')" size="1" disabled="true"/>
+									</td>
+									<td>
+									<input type="text" id = "Q_3_6_2_I" class="numeric"  onblur="unFocusRouter('Q_3_6_2_I', 2, 'guessreSampleParticleIndex')"size="1" disabled="true"/>
+									</td>
+									<td>
+									<input type="text" id = "Q_3_6_3_I" class="numeric"  onblur="unFocusRouter('Q_3_6_3_I', 3, 'guessreSampleParticleIndex')"size="1" disabled="true"/>
+									</td>
+									<td>
+									<input type="text" id = "Q_3_6_4_I" class="numeric"  onblur="unFocusRouter('Q_3_6_4_I', 4, 'guessreSampleParticleIndex')"size="1" disabled="true"/>
+									</td>
+									<td>
+									<input type="text" id = "Q_3_6_5_I" class="numeric"  onblur="unFocusRouter('Q_3_6_5_I', 5, 'guessreSampleParticleIndex')"size="1" disabled="true"/>
+									</td>
+									<td id="Q_3_6_6_I"></td>
+									<td id="Q_3_6_7_I"></td>
+									<td id="Q_3_6_8_I"></td>
+									<td id="Q_3_6_9_I"></td>
+									<td id="Q_3_6_10_I"></td>
+									<td id="Q_3_6_11_I"></td>
+									<td id="Q_3_6_12_I"></td>
+									<td id="Q_3_6_13_I"></td>
+									<td id="Q_3_6_14_I"></td>
+									<td id="Q_3_6_15_I"></td>
+								</tr>
+							</table>
+						</div>
+					</div>
+
+					</br>
+
+					<div style="height: 270px">
+
+						<div class = "pictureDiv" style="float: left">
+							<canvas id="myCanvasWeighted2" width="450" height="300" style="border:1px solid #c3c3c3; margin-right: 40px;">
+								Your browser does not support the canvas element.
+							</canvas>
+
+							<p >
+								Displays each particle with its weight from the evidence
+
+							</p>
+						</div>
+						<div class = "pictureDiv" style="float: right">
+
+							<canvas id="myCanvasThird" width="450" height="300" style="border:1px solid #c3c3c3; margin-left: 40px; ">
+								Your browser does not support the canvas element.
+							</canvas>
+
+							<p >
+								Displays the location of each new particle
+
+							</p>
+						</div>
+
+					</div>
+					<br/>
+
+					<script type="text/javascript">
+						var canvas3 = document.getElementById("myCanvasThird");
+						var ctx3 = canvas3.getContext("2d");
+						var img3 = new Image();
+
+						img3.onload = function() {
+							ctx3.drawImage(img3, 0, 0, 450, 300);
+
+						};
+						img3.src = "http://particlefiltering.phpfogapp.com/newMap.png";
+
+						var canvas3fat = document.getElementById("myCanvasWeighted2");
+						ctx3fat = canvas3fat.getContext("2d");
+						var img3fat = new Image();
+
+						img3fat.onload = function() {
+							ctx3fat.drawImage(img3fat, 0, 0, 450, 300);
+
+						};
+						img3fat.src = "http://particlefiltering.phpfogapp.com/newMap.png";
+
+					</script>
+
+					<br />
+
+					<br />
+					<p>
+
+						This is the end of the update for t=1.
+
+						Of course, we would now continue by repeating the time update, reweighting, and resampling steps. We'll leave that to the computers, though.
+					</p>
+
+					<p>
+
+						Now let's reconsider the final resampling step. We will back up to the cumulative weights computed two steps ago, and this time carry out the particle resampling using low-variance resampling. Please check out the lecture slides if you are unfamiliar with low-variance resampling; we'll also help guide you through the steps.
+					</p>
+
+					<div>
+						<font size="+1">
+							<center>
+								Question 3.7 (1 points)
+							</center></font>
+					</div>
+
+
+
+					<p id = "forLowVar" >
+						We'll use the number r=0.395984041386, randomly drawn between 0 and 1, as our source of randomness.
+					</p>
+
+				<table style="float: left">
+							<td>
+
+						First, we need to divide that number by N to get a random number uniformly distributed between 0 and 1/N:
+
+						</td>
+
+							<td>
+						<input type="text" class="numeric"  id = "Q_3_7_0"  size = "14" onblur = "checkSingleQuestion('Q3.7')" disabled="true" />
+						</td>
+						</table>
+
+					<br />
+					<br />
+
+					<font size="+1">
+						<center>
+							Question 3.8 (2 points)
+						</center></font>
+					<br />
+
+<p>Now, start with your answer r/N to the previous part, and select particles corresponding to <span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-66-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-672"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 9.04em; "><span style="position: absolute; clip: rect(1.422em 1000em 2.757em -0.481em); top: -2.339em; left: 0em; "><span class="mrow" id="MathJax-Span-673"><span class="mi" id="MathJax-Span-674" style="font-family: MathJax_Math; font-style: italic; ">u</span><span class="mo" id="MathJax-Span-675" style="font-family: MathJax_Main; padding-left: 0.278em; ">=</span><span class="mi" id="MathJax-Span-676" style="font-family: MathJax_Math; font-style: italic; padding-left: 0.278em; ">r</span><span class="texatom" id="MathJax-Span-677"><span class="mrow" id="MathJax-Span-678"><span class="mo" id="MathJax-Span-679" style="font-family: MathJax_Main; ">/</span></span></span><span class="mi" id="MathJax-Span-680" style="font-family: MathJax_Math; font-style: italic; ">N<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.085em; "></span></span><span class="mo" id="MathJax-Span-681" style="font-family: MathJax_Main; padding-left: 0.222em; ">+</span><span class="mo" id="MathJax-Span-682" style="font-family: MathJax_Main; padding-left: 0.222em; ">(</span><span class="mi" id="MathJax-Span-683" style="font-family: MathJax_Math; font-style: italic; ">n</span><span class="mo" id="MathJax-Span-684" style="font-family: MathJax_Main; padding-left: 0.222em; ">−</span><span class="mn" id="MathJax-Span-685" style="font-family: MathJax_Main; padding-left: 0.222em; ">1</span><span class="mo" id="MathJax-Span-686" style="font-family: MathJax_Main; ">)</span><span class="texatom" id="MathJax-Span-687"><span class="mrow" id="MathJax-Span-688"><span class="mo" id="MathJax-Span-689" style="font-family: MathJax_Main; ">/</span></span></span><span class="mi" id="MathJax-Span-690" style="font-family: MathJax_Math; font-style: italic; ">N<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.085em; "></span></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.245em; vertical-align: -0.342em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-66">u = r/N + (n-1)/N</script>, where <span class="MathJax_Preview"></span><span class="MathJax" id="MathJax-Element-67-Frame" role="textbox" aria-readonly="true" style=""><nobr><span class="math" id="MathJax-Span-691"><span style="display: inline-block; position: relative; height: 0px; font-size: 112%; width: 5.246em; "><span style="position: absolute; clip: rect(1.489em 1000em 2.701em -0.481em); top: -2.339em; left: 0em; "><span class="mrow" id="MathJax-Span-692"><span class="mi" id="MathJax-Span-693" style="font-family: MathJax_Math; font-style: italic; ">n</span><span class="mo" id="MathJax-Span-694" style="font-family: MathJax_Main; padding-left: 0.278em; ">=</span><span class="mn" id="MathJax-Span-695" style="font-family: MathJax_Main; padding-left: 0.278em; ">1</span><span class="mo" id="MathJax-Span-696" style="font-family: MathJax_Main; ">,</span><span class="mo" id="MathJax-Span-697" style="font-family: MathJax_Main; padding-left: 0.167em; ">…</span><span class="mo" id="MathJax-Span-698" style="font-family: MathJax_Main; padding-left: 0.167em; ">,</span><span class="mi" id="MathJax-Span-699" style="font-family: MathJax_Math; font-style: italic; padding-left: 0.167em; ">N<span style="display: inline-block; overflow: hidden; height: 1px; width: 0.085em; "></span></span></span><span style="display: inline-block; width: 0px; height: 2.339em; "></span></span></span><span style="border-left-width: 0em; border-left-style: solid; display: inline-block; overflow: hidden; width: 0px; height: 1.107em; vertical-align: -0.28em; "></span></span></nobr></span><script type="math/tex" id="MathJax-Element-67">n = 1, \ldots, N</script>. You'll compare these uniformly-spaced random numbers to your cumulative weights from before. Fill in the index of the particles sampled in the 'old index' row, and their corresponding states in the 'new state' row.
+	</p>
+					<canvas id="myCanvasLong2" width="890" height="80" style="border:1px solid #c3c3c3;"></canvas>
+					<br />
+
+					<br />
+
+					<div class='choice_table'>
+						<table border="1" class="integer">
+							<tr>
+								<td> new particle </td><td> p1 </td><td> p2 </td><td> p3 </td><td> p4 </td><td> p5 </td><td> p6 </td><td> p7 </td><td> p8 </td><td> p9 </td><td> p10 </td>
+								<td> p11 </td><td> p12 </td><td> p13 </td><td> p14 </td><td> p15 </td>
+							</tr>
+							<tr>
+								<td> u </td><td>
+								<input  id="Q_3_7_1_U" class="numeric" type="text" size = "5" onblur= "unFocusRouter('Q_3_7_1_U',1,'guessUState')"  disabled="true" >
+								</td>
+								<td>
+								<input  id="Q_3_7_2_U" class="numeric"  type="text" size = "5" onblur= "unFocusRouter('Q_3_7_2_U',2,'guessUState')"  disabled="true"/>
+								</td><td>
+								<input  id="Q_3_7_3_U" class="numeric" type="text" size = "5" onblur= "unFocusRouter('Q_3_7_3_U',3,'guessUState')"  disabled="true"/>
+								</td><td>
+								<input  id="Q_3_7_4_U" class="numeric" type="text" size = "5" onblur= "unFocusRouter('Q_3_7_4_U',4,'guessUState')"  disabled="true"/>
+								</td><td>
+								<input  id="Q_3_7_5_U" type="text" class="numeric"  size = "5" onblur= "unFocusRouter('Q_3_7_5_U',5,'guessUState')"  disabled="true"/>
+								</td><td id="Q_3_7_6_U"></td>
+								<td  id="Q_3_7_7_U"></td><td  id="Q_3_7_8_U"></td><td id="Q_3_7_9_U"></td><td id="Q_3_7_10_U"></td><td id="Q_3_7_11_U"></td><td id="Q_3_7_12_U"></td><td id="Q_3_7_13_U"></td><td id="Q_3_7_14_U" ></td><td id="Q_3_7_15_U" ></td>
+
+							</tr>
+							<tr>
+								<td> old index </td><td>
+								<input  id="Q_3_7_1_O" type="text" size = "5" class="numeric"  onblur= "unFocusRouter('Q_3_7_1_O',1,'guessOldIndex')" disabled="true"/>
+								</td>
+								<td>
+								<input  id="Q_3_7_2_O" type="text" size = "5" class="numeric"  onblur= "unFocusRouter('Q_3_7_2_O',2,'guessOldIndex')" disabled="true"/>
+								</td><td>
+								<input  id="Q_3_7_3_O" type="text" size = "5" class="numeric" onblur= "unFocusRouter('Q_3_7_3_O',3,'guessOldIndex')" disabled="true"/>
+								</td><td>
+								<input  id="Q_3_7_4_O" type="text" size = "5" class="numeric"  onblur= "unFocusRouter('Q_3_7_4_O',4,'guessOldIndex')" disabled="true"/>
+								</td><td>
+								<input  id="Q_3_7_5_O" type="text" size = "5" class="numeric" onblur= "unFocusRouter('Q_3_7_5_O',5,'guessOldIndex')" disabled="true"/>
+								</td><td id="Q_3_7_6_O"></td>
+								<td  id="Q_3_7_7_O"></td><td  id="Q_3_7_8_O"></td><td id="Q_3_7_9_O"></td><td id="Q_3_7_10_O"></td><td id="Q_3_7_11_O"></td><td id="Q_3_7_12_O"></td><td id="Q_3_7_13_O"></td><td id="Q_3_7_14_O" ></td><td id="Q_3_7_15_O" ></td>
+							</tr>
+							<tr>
+								<td> State </td><td>
+								<input  id="Q_3_7_1_N" type="text" size = "5" class="numeric"  onblur= "unFocusRouter('Q_3_7_1_N',1,'guessNewState')" disabled="true"/>
+								</td>
+								<td>
+								<input  id="Q_3_7_2_N" type="text" size = "5" class="numeric"  onblur= "unFocusRouter('Q_3_7_2_N',2,'guessNewState')" disabled="true"/>
+								</td><td>
+								<input  id="Q_3_7_3_N" type="text" size = "5" class="numeric" onblur= "unFocusRouter('Q_3_7_3_N',3,'guessNewState')" disabled="true"/>
+								</td><td>
+								<input  id="Q_3_7_4_N" type="text" size = "5" class="numeric" onblur= "unFocusRouter('Q_3_7_4_N',4,'guessNewState')" disabled="true"/>
+								</td><td>
+								<input  id="Q_3_7_5_N" type="text" size = "5" class="numeric" onblur= "unFocusRouter('Q_3_7_5_N',5,'guessNewState')" disabled="true"/>
+								</td><td id="Q_3_7_6_N"></td>
+								<td  id="Q_3_7_7_N"></td><td  id="Q_3_7_8_N"></td><td id="Q_3_7_9_N"></td><td id="Q_3_7_10_N"></td><td id="Q_3_7_11_N"></td><td id="Q_3_7_12_N"></td><td id="Q_3_7_13_N"></td><td id="Q_3_7_14_N" ></td><td id="Q_3_7_15_N" ></td>
+
+							</tr>
+						</table>
+					</div>
+
+					<br />
+
+					<br />
+
+					Congratulations, you're done resampling! The last few questions will use the final (low-variance resampled) particle states you just calculated.
+					<br />
+					<br />
+					<div>
+						<font size="+1">
+							<center>
+								Question 3.9 (1 points)
+							</center></font>
+					</div>
+
+					<br />
+
+	
+											<table style="float: left">
+							<td>
+
+					Use your low-variance-resampled particles to estimate the probability that the robot is in a corner:
+					
+					</td>
+
+							<td>
+					
+					<input type="text"  id = "Q_3_9_0"  size = "14" class="numeric" onblur= "checkSingleQuestion('Q3.9')" disabled="true"/>
+					</td>
+					</table>
+					<br />
+
+					<br />
+
+					<div>
+						<font size="+1">
+							<center>
+								Question 3.10 (1 points)
+							</center></font>
+					</div>
+					<br />
+										<table style="float: left">
+
+				<td>	Use your low-variance-resampled particles to estimate the probability that the robot is in the top row of the map:
+					</td>
+
+							<td>
+					<input type="text"  id = "Q_3_10_0"  size = "14" class="numeric" onblur= "checkSingleQuestion('Q3.10')" disabled="true"/>
+					</td>
+					</table>
+						
+					<br />
+					<br />
+
+					<br />
+
+				</div>
+
+			</div>
+
+		</div>
+
+		</div>
+
+	</body>
+</html>

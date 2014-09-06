@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Rejection Sampling</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<link href="/stylesheets/sampling/steping.css" media="screen" rel="stylesheet" type="text/css">
+
+		<script type="text/javascript">
+			var stepOrder = [0, 1, 2, 3, 4, 5, 3, 4, 3, 4, 5, 3, 4, 6, 7, 8, 9];
+
+			var currentStep = 0;
+
+			var currentFrameCount = 0;
+
+			var numberOfFrames = 60;
+
+			var colorArray = new Array("red", "lightBlue", "yellow", "greenYellow", "red", "lightBlue", "yellow", "greenYellow", "red", "lightBlue", "yellow", "greenYellow", "red", "lightBlue", "yellow", "greenYellow");
+
+			$(document).ready(function() {
+				$("#next_step").click(function() {
+
+					nextStepLighting(stepOrder[currentStep], stepOrder[currentStep + 1]);
+
+					currentStep++;
+
+					if(currentStep == 1) {
+
+						drawQueryGraph();
+						drawTitle()
+
+					}
+
+					if(currentStep == 3) {
+
+						clearCanvases()
+						drawSampleGraph(false, true, true, false, "Current Sample = P(+b|-a, +c, -d)");
+
+					}
+					if(currentStep == 4) {
+
+						drawParamaterCheck(false, true, false, false, true, false);
+					}
+
+					if(currentStep == 5) {
+
+						drawSavedBs(50, 65, false, 1);
+
+					}
+
+					if(currentStep == 6) {
+						clearCanvases()
+						drawSampleGraph(false, true, false, false, "Current Sample = P(+b|-a, -c, -d)");
+
+					}
+
+					if(currentStep == 7) {
+
+						drawParamaterCheck(false, true, false, false, false, false);
+
+					}
+					if(currentStep == 8) {
+						clearCanvases()
+						drawSampleGraph(false, false, true, false, "Current Sample = P(-b|-a, +c, -d)");
+
+					}
+					if(currentStep == 9) {
+
+						drawParamaterCheck(false, true, false, false, true, false);
+
+					}
+					if(currentStep == 10) {
+
+						drawSavedBs(130, 65, true, 1);
+
+					}
+
+					if(currentStep == 11) {
+						clearCanvases()
+						drawSampleGraph(true, false, true, true, "Current Sample = P(-b|a, c, d)");
+
+					}
+					if(currentStep == 12) {
+
+						drawParamaterCheck(false, true, false, true, true, true);
+
+					}
+
+					if(currentStep == 14) {
+
+						combineAnimation();
+
+					}
+					if(currentStep == 15) {
+
+						alert("Return 0.5 for the probability to be +b");
+
+					}
+				});
+			});
+
+			function combineAnimation() {
+
+				for( i = 0; i < numberOfFrames; i++) {
+
+					setTimeout("drawFrame()", i * 17);
+
+				}
+
+			}
+
+			function drawFrame() {
+
+				var canvas = $("#myCanvasStoring")[0];
+
+				var context = canvas.getContext("2d");
+
+				context.clearRect(0, 0, canvas.width, canvas.height);
+
+				context.globalAlpha = 1;
+				drawTitle()
+
+				drawSavedBs(50 + currentFrameCount * .7, 65, false, 1 - (currentFrameCount / numberOfFrames));
+
+				drawSavedBs(130 - currentFrameCount * .7, 65, true, 1 - (currentFrameCount / numberOfFrames));
+
+				context.globalAlpha = (currentFrameCount / numberOfFrames);
+
+				context.beginPath();
+				context.arc(92, 65, 30, Math.PI, 2 * Math.PI, false);
+				context.fillStyle = "lime";
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.closePath();
+				///text
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+				context.fillText("+b", 82, 59);
+
+				context.beginPath();
+				context.arc(92, 65, 30, 0, Math.PI, false);
+				context.fillStyle = "red";
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.closePath();
+				///text
+				context.fillStyle = "black";
+				context.fillText("-b", 84, 85);
+
+				context.font = "13pt sans-serif";
+				context.fillText("50% +b", 134, 55);
+				context.fillText("50% -b", 134, 89);
+
+				currentFrameCount++;
+
+			}
+
+			function drawTitle() {
+
+				var canvas = $("#myCanvasStoring")[0];
+
+				var context = canvas.getContext("2d");
+
+				context.fillStyle = "black";
+				context.font = "16pt sans-serif";
+
+				context.fillText("Fullfilled Samples:", 22, 25);
+
+			}
+
+			function drawSavedBs(xPos, yPos, isRed, alpha) {
+
+				var canvas = $("#myCanvasStoring")[0];
+
+				var context = canvas.getContext("2d");
+
+				var radius = 30;
+
+				context.globalAlpha = alpha;
+
+				//QA
+				context.beginPath();
+				context.arc(xPos, yPos, radius, 0, 2 * Math.PI, false);
+				if(isRed) {
+					context.fillStyle = "red";
+				} else {
+					context.fillStyle = "lime";
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+
+				context.fillStyle = "black";
+				context.font = "16pt sans-serif";
+
+				if(isRed) {
+
+					context.fillText("-b", xPos - 11, yPos + 6);
+
+				} else {
+					context.fillText("+b", xPos - 11, yPos + 6);
+				}
+				context.stroke();
+				context.closePath();
+
+			}
+
+			function drawSampleGraph(flagA, flagB, flagC, flagD, text) {
+
+				var canvas = $("#currentSampleCanvas")[0];
+
+				var context = canvas.getContext("2d");
+
+				context.clearRect(0, 0, canvas.width, canvas.height);
+
+				var centerX = canvas.width / 2;
+
+				var centerY = (canvas.height / 2 ) + 14;
+
+				var radius = 30;
+
+				/// A
+				context.beginPath();
+				context.arc(centerX - 100, centerY, radius, 0, 2 * Math.PI, false);
+				if(flagA) {
+					context.fillStyle = "lime";
+				} else {
+					context.fillStyle = "red";
+
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+				context.fillText("A", centerX - 100 - 7, centerY + 5);
+				context.closePath();
+				context.beginPath();
+				context.lineWidth = 2;
+				canvas_arrow(context, centerX + radius - 100, centerY, centerX - radius - 2, centerY, true);
+				context.closePath();
+
+				/// B
+				context.beginPath();
+				context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+				if(flagB) {
+					context.fillStyle = "lime";
+				} else {
+					context.fillStyle = "red";
+
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+				context.fillText("B", centerX - 7, centerY + 5);
+				context.closePath();
+
+				/// C
+				context.beginPath();
+				context.arc(centerX + 100, centerY - 40, radius, 0, 2 * Math.PI, false);
+				if(flagC) {
+					context.fillStyle = "lime";
+				} else {
+					context.fillStyle = "red";
+
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+				context.fillText("C", centerX + 100 - 7, centerY - 35);
+				context.closePath();
+				context.beginPath();
+				context.lineWidth = 2;
+				canvas_arrow(context, centerX + radius, centerY, centerX + 100 - radius - 2, centerY - 40, true);
+				context.closePath();
+
+				/// D
+				context.beginPath();
+				context.arc(centerX + 100, centerY + 40, radius, 0, 2 * Math.PI, false);
+				if(flagD) {
+					context.fillStyle = "lime";
+				} else {
+					context.fillStyle = "red";
+
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+				context.fillText("D", centerX + 100 - 7, centerY + 45);
+				context.closePath();
+				context.beginPath();
+				context.lineWidth = 2;
+				canvas_arrow(context, centerX + radius, centerY, centerX + 100 - radius - 2, centerY + 40, true);
+				context.closePath();
+
+				//Top Text
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+
+				context.fillText(text, 12, 30);
+			}
+
+			function drawQueryGraph() {
+
+				var canvas = $("#queryCanvas")[0];
+
+				var context = canvas.getContext("2d");
+
+				var centerX = canvas.width / 2;
+
+				var centerY = (canvas.height / 2 ) + 14;
+
+				var radius = 30;
+
+				/// A
+				context.beginPath();
+				context.arc(centerX - 100, centerY, radius, 0, 2 * Math.PI, false);
+				context.fillStyle = "red";
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+				context.fillText("A", centerX - 100 - 7, centerY + 5);
+				context.closePath();
+				context.beginPath();
+				context.lineWidth = 2;
+				canvas_arrow(context, centerX + radius - 100, centerY, centerX - radius - 2, centerY, true);
+				context.closePath();
+
+				/// B
+				context.beginPath();
+				context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+				context.fillStyle = "#FFFFFF";
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+				context.fillText("B", centerX - 7, centerY + 5);
+				context.closePath();
+
+				/// C
+				context.beginPath();
+				context.arc(centerX + 100, centerY - 40, radius, 0, 2 * Math.PI, false);
+				context.fillStyle = "lime";
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+				context.fillText("C", centerX + 100 - 7, centerY - 35);
+				context.closePath();
+				context.beginPath();
+				context.lineWidth = 2;
+				canvas_arrow(context, centerX + radius, centerY, centerX + 100 - radius - 2, centerY - 40, true);
+				context.closePath();
+
+				/// D
+				context.beginPath();
+				context.arc(centerX + 100, centerY + 40, radius, 0, 2 * Math.PI, false);
+				context.fillStyle = "red";
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+				context.fillText("D", centerX + 100 - 7, centerY + 45);
+				context.closePath();
+				context.beginPath();
+				context.lineWidth = 2;
+				canvas_arrow(context, centerX + radius, centerY, centerX + 100 - radius - 2, centerY + 40, true);
+				context.closePath();
+
+				//Top Text
+				context.fillStyle = "black";
+				context.font = "14pt sans-serif";
+
+				context.fillText("The Query = P(+b|-a, +c, -d)", 36, 30);
+
+			}
+
+			function clearCanvases() {
+
+				var canvas = $("#myCanvasChecking")[0];
+
+				var context = canvas.getContext("2d");
+
+				context.clearRect(0, 0, canvas.width, canvas.height);
+
+			}
+
+			function drawParamaterCheck(queryA, queryC, queryD, sampleA, sampleC, sampleD) {
+
+				var canvas = $("#myCanvasChecking")[0];
+
+				var context = canvas.getContext("2d");
+
+				context.clearRect(0, 0, canvas.width, canvas.height);
+
+				context.fillStyle = "black";
+				context.font = "16pt sans-serif";
+
+				context.fillText("Query", 50, 30);
+				context.fillText("Sample", 120, 30);
+				context.fillText("Result", 205, 30);
+				context.fillText("A", 10, 70);
+				context.fillText("C", 10, 120);
+				context.fillText("D", 10, 170);
+
+				var radius = 20;
+
+				//QA
+				context.beginPath();
+				context.arc(75, 65, radius, 0, 2 * Math.PI, false);
+				if(queryA == false) {
+					context.fillStyle = "red";
+				} else {
+					context.fillStyle = "lime";
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.closePath();
+
+				//QC
+				context.beginPath();
+				context.arc(75, 115, radius, 0, 2 * Math.PI, false);
+				if(queryC == false) {
+					context.fillStyle = "red";
+				} else {
+					context.fillStyle = "lime";
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.closePath();
+
+				//QD
+				context.beginPath();
+				context.arc(75, 165, radius, 0, 2 * Math.PI, false);
+				if(queryD == false) {
+					context.fillStyle = "red";
+				} else {
+					context.fillStyle = "lime";
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.closePath();
+
+				//SA
+				context.beginPath();
+				context.arc(155, 65, radius, 0, 2 * Math.PI, false);
+				if(sampleA == false) {
+					context.fillStyle = "red";
+				} else {
+					context.fillStyle = "lime";
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.closePath();
+
+				//SC
+				context.beginPath();
+				context.arc(155, 115, radius, 0, 2 * Math.PI, false);
+				if(sampleC == false) {
+					context.fillStyle = "red";
+				} else {
+					context.fillStyle = "lime";
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.closePath();
+
+				//SD
+				context.beginPath();
+				context.arc(155, 165, radius, 0, 2 * Math.PI, false);
+				if(sampleD == false) {
+					context.fillStyle = "red";
+				} else {
+					context.fillStyle = "lime";
+				}
+				context.fill();
+				context.lineWidth = 1;
+				context.strokeStyle = "black";
+				context.stroke();
+				context.closePath();
+
+				if(queryA == sampleA) {// draw green check
+
+					drawCheck(220, 65)
+				} else {// draw red x
+
+					drawX(220, 50)
+
+				}
+
+				if(queryC == sampleC) {
+
+					drawCheck(220, 115)
+
+				} else {
+					drawX(220, 100)
+
+				}
+
+				if(queryD == sampleD) {
+					drawCheck(220, 165)
+
+				} else {
+
+					drawX(220, 150)
+
+				}
+
+			}
+
+			function drawX(xPos, yPos) {
+
+				var canvas = $("#myCanvasChecking")[0];
+
+				var context = canvas.getContext("2d");
+
+				context.beginPath();
+				context.moveTo(xPos, yPos);
+				context.lineTo(xPos + 30, yPos + 30);
+				context.moveTo(xPos, yPos + 30);
+				context.lineTo(xPos + 30, yPos);
+				context.lineWidth = 5;
+				context.strokeStyle = "red";
+				context.stroke();
+				context.closePath();
+			}
+
+			function drawCheck(xPos, yPos) {
+
+				var canvas = $("#myCanvasChecking")[0];
+
+				var context = canvas.getContext("2d");
+
+				context.beginPath();
+				context.moveTo(xPos, yPos);
+				context.lineTo(xPos + 10, yPos + 10);
+				context.lineTo(xPos + 30, yPos - 20);
+				context.lineWidth = 5;
+				context.strokeStyle = "lime";
+				context.stroke();
+				context.closePath();
+
+			}
+
+			function canvas_arrow(context, fromx, fromy, tox, toy, flag) {
+				var headlen = 10;
+				context.moveTo(fromx, fromy);
+				context.lineTo(tox, toy);
+
+				if(flag) {
+					var angle = Math.atan2(toy - fromy, tox - fromx);
+					context.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+					context.moveTo(tox, toy);
+					context.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+				}
+				context.stroke();
+
+			}
+
+			function nextStepLighting(oldStep, newStep) {
+
+				$("#pqguide" + oldStep)[0].style.listStyleType = "none";
+				$("#pqguide" + oldStep)[0].style.backgroundColor = "rgb(255, 255, 255)";
+
+				$("#pqguide" + newStep)[0].style.listStyleType = "circle";
+				$("#pqguide" + newStep)[0].style.backgroundColor = "rgb(230, 230, 230)";
+			}
+		</script>
+
+	</head>
+	<body>
+		<font size="+3">
+			<center>
+				Rejection Sampling
+			</center></font>
+		<br />
+
+		<div id="pseudocode">
+			<div id="flow_buttons" align="center">
+				<br />
+				<button id="next_step" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" role="button" aria-disabled="false">
+					<span class="ui-button-text">Step</span>
+				</button>
+			</div>
+			<ul id="codeguide">
+				<li id="pqguide0" style="background-color: rgb(230, 230, 230); list-style-type: circle; ">
+					function Sample(Query, List_Of_Sample) returns a result
+				</li>
+				<li id="pqguide1" style="background-color: rgb(255, 255, 255); list-style-type: none; ">
+					&nbsp;&nbsp;&nbsp;&nbsp;initialize Query and remaining samples
+				</li>
+				<li id="pqguide2" style="background-color: rgb(255, 255, 255); list-style-type: none; ">
+					&nbsp;&nbsp;&nbsp;&nbsp;loop for each sample in list
+				</li>
+				<li id="pqguide3" style="background-color: rgb(255, 255, 255); list-style-type: none; ">
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current_sample = List_Of_Sample[i]
+				</li>
+				<li id="pqguide4" style="background-color: rgb(255, 255, 255); list-style-type: none; ">
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if currentSample fullfills rejctions
+				</li>
+				<li id="pqguide5" style="background-color: rgb(255, 255, 255); list-style-type: none; ">
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add currentSample to results
+				</li>
+				<li id="pqguide6" style="background-color: rgb(255, 255, 255); list-style-type: none; ">
+					&nbsp;&nbsp;&nbsp;&nbsp;end loop
+				</li>
+				<li id="pqguide7" style="background-color: rgb(255, 255, 255); list-style-type: none; ">
+					&nbsp;&nbsp;&nbsp;&nbsp;evaluate remaining samples
+				</li>
+				<li id="pqguide8" style="background-color: rgb(255, 255, 255); list-style-type: none; ">
+					&nbsp;&nbsp;&nbsp;&nbsp;return probability
+				</li>
+				<li id="2" style="background-color: rgb(255, 255, 255); list-style-type: none; ">
+					&nbsp;&nbsp;&nbsp;&nbsp;
+				</li>
+			</ul>
+
+		</div>
+
+		<div id = "visual" >
+
+			<canvas id="queryCanvas" width="300" height="200" style="border:1px solid #ffffff;"></canvas>
+
+			<canvas id="currentSampleCanvas" width="300" height="200" style= "margin-left:10px; border:1px solid #ffffff;"></canvas>
+
+		</div>
+
+		<div >
+			<canvas id="myCanvasChecking" width="300" height="200" style="border:1px solid #ffffff;"></canvas>
+
+			<canvas id="myCanvasStoring" width="210" height="100" style="margin-left:10px; border:1px solid #ffffff;"></canvas>
+		</div>
+	</body>
+</html>

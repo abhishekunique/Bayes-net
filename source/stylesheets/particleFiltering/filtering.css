@@ -1,0 +1,29 @@
+
+
+.pictureDiv > p {
+	
+		text-align: center;
+		font-size: 12px;
+	
+}
+
+
+
+p{
+	
+	text-align: left;
+	
+}
+	
+.whole_Page {
+	
+	margin-left:65px;
+	margin-right:65px;
+	border-style: solid;
+	border-color:blue;
+	border-width: 2px;
+	border-radius: 5px;
+	padding-left: 40px;
+	padding-right: 40px;
+
+}

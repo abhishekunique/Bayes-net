@@ -1,0 +1,59 @@
+<html>
+	<script src='/javascripts/lib/jquery-1.7.2.min.js' type='text/javascript'></script>
+    <script src='/javascripts/lib/jquery-ui-1.8.21.custom.min.js' type='text/javascript'></script>
+	<script type="text/javascript" src="/javascripts/lib/raphael.js"></script>
+	<script type="text/javascript" src="/javascripts/exercises/csps/map_coloring/paths.js"></script>
+	<script type="text/javascript" src="/javascripts/exercises/csps/map_coloring/paths2.js"></script>
+	<script type="text/javascript" src="/javascripts/exercises/csps/map_coloring/stackVis.js"></script>
+	<script type="text/javascript" src="/javascripts/exercises/csps/map_coloring/init.js"></script>
+	<link href="/stylesheets/bootstrap.css" rel="stylesheet">
+	<style type="text/css">
+		.ui-effects-transfer { border: 2px solid black; }
+	</style>
+	<div class="navbar navbar-top">
+		<div class="navbar-inner">
+			<div class="span12">
+				<a class="brand">Backtracking Search</a>
+			</div>		
+		</div>
+	</div>
+	<div class="span12">
+		<div class="row">
+			<div class="span10">
+				<!-- This row is the map and the psuedocode -->	
+				<div class="row">
+					<div id="map" class="span4"></div>
+					<div id="code" class="span6">
+						<code id="code1">if (assignment is complete): </code></br>
+						<code id="code2" style="padding-left:20px;">return assignment</code></br>
+						<code id="code3">var &larr; SELECT-UNASSIGNED-VARIABLE</code></br>
+						<code id="code4">for each value in ORDERED-DOMAIN-VALUES</code></br>
+						<code id="code5" style="padding-left:20px;">if (value is consistent with assignment given constraints):</code></br>
+						<code id="code6" style="padding-left:40px;">add {var = value} to assignment</code></br>
+						<code id="code7" style="padding-left:40px;">result &larr; BACKTRACKING(assignment, csp)</code></br>
+						<code id="code8" style="padding-left:40px;">if (result &ne; failure):</code></br>
+						<code id="code9" style="padding-left:60px;">return result</code></br>
+						<code id="code10" style="padding-left:40px;">remove {var = value} from assignment</code></br>
+						<code id="code11"> return failure</code></br></br></br>
+						<button class="offset1" onclick="next()">Next</button>
+					</div>
+				</div>	
+				<!-- This row is the domains -->
+				<div>
+					<div id="domains" class="span4" style="margin-left:0px;"></div>
+				</div>
+			</div>
+			<div class="span2">
+				<h2 style="padding-left: 115px;">Stack</h2>
+				<div id="stack"></div>
+			</div>
+		</div>
+		</br>
+		<select id="mapSelect" size="1">
+			<option value="nothing" selected="selected">Choose a New Map</option>
+			<option value="#1">Australia</option>
+			<option value="#2">South West USA</option>
+		</select>
+	</div>
+</html>
+

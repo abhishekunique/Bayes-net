@@ -1,0 +1,45 @@
+scheme for attribution of content (i.e. map from wikipedia)
+-- also way for people to label our own stuff
+use 4 arrow crosshair for dragging
+look into svg vs canvas -- a bit dangerous
+need to pick a single psuedocode tracking method
+recursive functions -- repeat the code?
+-- link to pgbovine's python tutor
+
+
+notes for backtracking: should have function name up to so more obvious
+recursion
+perhaps something more informative for recursive depth
+need all cases: found w/ backtracking, found w/o, and didnt find at all
+
+
+graph drawer
+-- a circle to click on for vertexs
+-- directed/undir edges
+-- draggable vertices
+-- snap-to grid
+-- automated graph generation
+---- graphdracula layout algorithm
+
+search trees
+-- need to handle space better somehow
+-- perhaps highlight the goal 
+-- precomupute the tree and resize it to figure out how big things can be
+---- look into setviewbox in raphel
+-- have a warning that you won;t be able to read the tree if graph isn't nice
+-- 
+
+pacman minimax
+
+-- should visually notify when resetting to start state when checking a new
+action
+-- use minimax drawing from cs 188 stuff
+-- slides have two sets of pseudocode for minimax
+---- alphabeta more explicit about assigning values
+---- should use a style more similar to alphabeta
+-- show variable state?
+
+game of d sep
+-- needs to use soemthing to generate layouts, probably graphdracula
+
+

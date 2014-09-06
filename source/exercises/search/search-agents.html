@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Search Agent Demos</title>
+        <script src="/javascripts/lib/jquery-1.7.2.min.js" type="text/javascript"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/priority_queue.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/config.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/search.js"></script>  
+        <script type="application/javascript" src="/javascripts/exercises/search/pacman.js"></script>
+        <script language="JavaScript">
+            var config = new Config(30, 10, false);
+            window.interval1 = new Array;
+            function setup(game_id)
+                {
+                $("#run1").removeAttr("disabled");
+                $("#run2").removeAttr("disabled");
+                $("#status_bar1").html("");
+                $("#status_bar2").html("");
+                var ret;
+                
+                for (var i = 0; i < window.interval1.length; i++)
+                    clearInterval(window.interval1[i]);
+                layout1 = ["%%%%%%%%%%%%%%%%%%%%",
+                           "%...%.........%%...%",
+                           "%.%.%.%%%%%%%%%%.%.%",
+                           "%..................%",
+                           "%%%%%%%%.%.%%%%%%%1%",
+                           "%%%%%%%%.......    %",
+                           "%%%%%%%%%%%%%%%%%%%%"];
+                
+                layout2 = ["%%%%%%%%%%%%%%%%%%%%",
+                           "%   %.........%%...%",
+                           "% %1%.%%%%%%%%%%.%.%",
+                           "%                  %",
+                           "%%%%%%%%.%.%%%%%%% %",
+                           "%%%%%%%%.......    %",
+                           "%%%%%%%%%%%%%%%%%%%%"];
+                
+                layout3 = ["%%%%%%%%%%%%%%%%%%%%",
+                           "%.  %         %%   %",
+                           "% % % %%%%%%%%%% % %",
+                           "%                  %",
+                           "%%%%%%%% % %%%%%%% %",
+                           "%%%%%%%%          1%",
+                           "%%%%%%%%%%%%%%%%%%%%"];
+                
+                layout4 = ["%%%%%%%%%%%%%%%%%%%%",
+                           "%   %         %%...%",
+                           "% %1%.%%%%%%%%%%.%.%",
+                           "%                  %",
+                           "%%%%%%%% % %%%%%%% %",
+                           "%%%%%%%%           %",
+                           "%%%%%%%%%%%%%%%%%%%%"];
+                
+                layout5=    ["%%%%%%%",
+                            "%    1%",
+                            "% %%% %",
+                            "%  %  %",
+                            "%%   %%",
+                            "%. %%%%",
+                            "%%%%%%%"];
+                
+                if (!game_id || game_id == 1)
+                    {
+                    var canvas = document.getElementById("canvas1");
+                    layout = layout4;
+                    layout.width = layout[0].length;
+                    layout.height = layout.length;
+                    var game1 = new Game(layout);
+                    game1.overlay_visited=1;
+                    game1.status_bar="#status_bar1";
+                    game1.alg="UCS";
+                    game1.config = config;
+                    game1.layout = layout;
+                    game1.canvas = canvas;
+                    game1.resize();
+                    draw(canvas, game1);
+                    window.pacman_currgame = game1;
+                    if (game_id)
+                        return game1;
+                    }
+                
+                if (!game_id || game_id == 2)
+                    {
+                    var canvas2 = document.getElementById("canvas2");
+                    layout = layout4;
+                    layout.width = layout[0].length;
+                    layout.height = layout.length;
+                    var game2 = new Game(layout);
+                    game2.overlay_visited = 1;
+                    game2.status_bar="#status_bar2";
+                    game2.alg="A*";
+                    game2.config = config;
+                    game2.layout = layout;
+                    game2.canvas = canvas2;
+                    game2.resize();
+                    draw(canvas2, game2);
+                    window.pacman_currgame2 = game2;
+                    if (game_id)
+                        return game2;
+                    }
+                
+                }
+            function pacman_reset(game)
+                {
+                for (var i = 0; i < window.interval1.length; i++)
+                    clearInterval(window.interval1[i]);
+                draw(game.canvas,game);
+                }
+            function run(game,game_id)
+                {
+                game = setup(game_id);
+                ret = tree_search(game);
+               
+                if (game_id==1)
+                    {
+                    $("#run1").attr("disabled", "disabled");
+                    $("#reset1").attr("disabled", "disabled");
+                    }
+                else if (game_id==2)
+                    {
+                    $("#run2").attr("disabled", "disabled");
+                    $("#reset2").attr("disabled", "disabled");
+                    }
+                }
+        </script>
+          
+    </head>
+ <body onload="setup(0);">
+        <h1>Goal Based Agents</h1>
+        <h2>UCS</h2>
+        <p>The agent performs an Uniform Cost Search to find the optimal path to eat all dots, then it moves along that path.
+        A gradient overlay displays the sequence in which nodes are expanded (darker are expanded before lighter ones).</p>
+        <canvas id="canvas1" width="300" height="300"></canvas>
+        <div class="status_bar" id="status_bar1"></div>
+        <button id="run1" onclick="run(window.pacman_currgame,1)">Run</button> &nbsp;<button id="reset1" onclick="setup(1)">Reset</button><br><br>
+        
+        <h2>A*</h2>
+        <p>The agent performs an A* search with a consistent heuristic to find the optimal path to eat all dots, then it moves along that path.
+         A gradient overlay displays the sequence in which nodes are expanded (darker are expanded before lighter ones).
+        </p>
+        <canvas id="canvas2" width="300" height="300"></canvas>
+        <div class="status_bar" id="status_bar2"></div>
+        <button id="run2" onclick="run(window.pacman_currgame2,2)">Run</button> &nbsp;<button id="reset2" onclick="setup(2)">Reset</button>
+ </body>
+</html>

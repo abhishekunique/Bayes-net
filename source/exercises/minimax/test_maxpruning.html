@@ -1,0 +1,2209 @@
+
+<!doctype html>
+<html>
+<head>
+      <script type="text/javascript" src="/javascripts/lib/raphael.js"></script>  
+        <script type="text/javascript" src="/javascripts/lib/jquery.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/priority_queue.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/config.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/search.js"></script>  
+        <script type="application/javascript" src="/javascripts/exercises/search/pacman.js"></script>
+    <meta charset="utf-8" />
+    
+    <style>
+        a { color: #0068D2; cursor: pointer; }
+        a:link, a:visited { text-decoration: none; color: #0068D2; }
+        a:hover, a:active { text-decoration: underline; color: #0068D2; }
+        body { font: 12px/18px "Lucida Grande", "Lucida Sans Unicode", sans-serif; }
+
+        #contacts-table { border-collapse: collapse;  }
+        #contacts-table, #contacts-table th, #contacts-table td { padding: 8px 16px; text-align: left; border: 0px solid #B9BABE; }
+        #contacts-table th { font-weight: bold; font-size: 14px; color: #29344B; }
+        #contacts-table td { color: #000; }
+        #contacts-table tr:nth-child(2n) { background: #E8EDFF; }
+        
+        .button input { padding: 4px 8px; color: #343434; background-color: #fdfdfd; background: -moz-linear-gradient(#fdfdfd, #e1e1e1); background: -webkit-gradient(linear, 0 0, 0 100%, from(#fdfdfd), to(#e1e1e1)); }
+        .button-default input { font-weight: bold; color: #fff; background-color: #7ca0c7; background: -moz-linear-gradient(#acc6e1, #7ca0c7); background: -webkit-gradient(linear, 0 0, 0 100%, from(#acc6e1), to(#7ca0c7)); border-color: #5b80b2; }
+        p.Depth
+        {
+            position:relative;  
+            left:100px;
+        }
+
+        div.scroll {
+            position:relative;
+            top: 100px;
+        height: 1000px;
+        width: 1000px;
+         float:left;
+        overflow: scroll;
+        border: 1px solid #666;
+        padding: 0px;
+        }
+
+    </style>
+</head>
+<body>
+    
+    
+    <button type="button" id="contacts-op-save" style="position:relative; top:80px;"> save </button>
+    <button type="button" id="reset" style="position:relative; top:80px;"> reset </button>
+    <button type="button" id="nextBoard" style="position:relative; top:80px;"> Next Board</button>
+    <button type="button" id="save_current"> Save current game state </button>
+
+    
+    
+    <input type="text" id="depth_input" value="2">
+
+    <input type="checkbox" name="optionShow"  id="optionShow1" checked="true"/> 
+    <input type="checkbox" name="optionShow"  id="optionShow2"/> 
+    <input type="checkbox" name="optionShow"  id="optionShow3"/> 
+    <input type="checkbox" name="optionShow"  id="optionShow4" /> 
+
+    <input type="checkbox" name="stepThrough"  id="stepThrough" /> 
+    <input type="checkbox" name="alphabeta"  id="alphabeta" />
+    <select name="ordering" id="ordering">
+    
+        <option selected="selected">NWSE</option>
+        <option>NWES</option>
+        <option>NESW</option>
+        <option>NEWS</option>
+        <option>NSWE</option>
+        <option>NSEW</option>
+        
+        <option>WNSE</option>
+        <option>WNES</option>
+        <option>WESN</option>
+        <option>WENS</option>
+        <option>WSNE</option>
+        <option>WSEN</option>
+
+        <option>SNWE</option>
+        <option>SNEW</option>
+        <option>SEWN</option>
+        <option>SENW</option>
+        <option>SWNE</option>
+        <option>SWEN</option>
+
+        <option>ENWS</option>
+        <option>ENSW</option>
+        <option>ESWN</option>
+        <option>ESNW</option>
+        <option>EWNS</option>
+        <option>EWSN</option>       
+        
+
+    </select>
+ <input type="text" id="rows1" value=5>
+    <input type="text" id="columns1" value=5 >
+    <input type="text" id="evaL_func_ghostDist" value="1">
+    <input type="text" id="eval_func_foodDist" value="-1">
+    <input type="text" id="eval_func_numFood" value="-3">
+        
+    <script>
+        
+        var x=5,y=10,z=15;
+        window.onload=function(){
+            $("#depth_input").hide();
+            $("#ordering").hide();
+            $("#evaL_func_ghostDist").hide();
+            $("#eval_func_foodDist").hide();
+            $("#eval_func_numFood").hide();
+            $("#save_current").hide();
+            $("#optionShow1").hide();
+            $("#optionShow2").hide();
+            $("#optionShow3").hide();
+            $("#optionShow4").hide();
+            $("#stepThrough").hide();
+            $("#alphabeta").hide();
+            $("#nextBoard").hide();
+    //===================
+    config = new Config(30, 10, false);
+            function setup(rows,cols,xPosFood,yPosFood,xPosWalls, yPosWalls,pPosx,pPosy,gPosx,gPosy,boardx,boardy,cellSize,addtoDiv,canvasid, xPosCapsule, yPosCapsule)
+                {
+                    console.log(config);
+                    config.CELL_SIZE=cellSize;  
+                    config.WALL_SIZE = cellSize/3;
+                    config.CAPSULE_SIZE = cellSize*0.25;
+                    config.FOOD_SIZE = cellSize*0.10;
+                    config.OFFSET = (cellSize - cellSize/3)/2;
+                    config.RADIUS = cellSize/6;
+                    config.PANE_SIZE = cellSize*1.5;
+                var canvas = document.createElement("canvas");
+                    canvas.id=canvasid;
+                    canvas.style.position='absolute';
+                    canvas.style.top=boardy+"px";
+                    canvas.style.left=boardx+"px";
+                    canvas.style.zIndex="50";
+                var ret;
+              
+                var layout3=[];
+                var row1=[];
+                for(var j=0;j<cols+2;j++){
+                        row1.push("%");
+                }
+                layout3.push(row1);
+                for(var i=0;i<rows;i++){
+                    var temp=[];
+                    temp.push('%');
+                    for(var j=0;j<cols;j++){
+                        temp.push(" ");
+                    }
+                    temp.push("%");
+                    layout3.push(temp);
+                }
+                for(var i=0;i<xPosFood.length;i++){
+                    layout3[yPosFood[i]+1][xPosFood[i]+1]=".";         
+                }
+                for(var i=0;i<xPosCapsule.length;i++){
+                    layout3[yPosCapsule[i]+1][xPosCapsule[i]+1]="o";         
+                }
+                for(var i=0;i<xPosWalls.length;i++){
+                    layout3[yPosWalls[i]+1][xPosWalls[i]+1]="%";         
+                }
+                for(var i=0;i<pPosx.length;i++){
+                    layout3[pPosy[i]+1][pPosx[i]+1]="1";         
+                }
+                for(var i=0;i<gPosx.length;i++){
+                    layout3[gPosy[i]+1][gPosx[i]+1]=(2+i).toString();         
+                }
+                var row1=[];
+                for(var j=0;j<cols+2;j++){
+                        row1.push("%");
+                }
+                layout3.push(row1);
+                for(var i=0;i<layout3.length;i++){
+                    layout3[i].join('');         
+                }
+                console.log(layout3);
+                layout = layout3;
+                layout.width = layout[0].length;
+                layout.height = layout.length;
+                var game = new Game(layout);
+                game.config = config;
+                game.layout = layout;
+                game.canvas = canvas;
+                game.resize();
+                draw(canvas, game);
+                var my_div = document.getElementById(addtoDiv);
+                console.log(addtoDiv);
+                my_div.insertBefore(canvas);
+                return canvas;
+            }
+        
+        var papery=500;
+        var showFlag=[1,0,0,0];
+    var paper1 = new Raphael(document.getElementById('scroller'), 1000, 500);  
+    var rows1=parseInt($("#rows1").val());
+var columns1=parseInt($("#columns1").val());
+var grid=new Array(rows1);
+var gridNode=new Array(rows1);
+var clickToggle=new Array(rows1);
+var pacmanToggle=new Array(rows1);
+var ghostToggle=new Array(rows1);
+var foodToggle=new Array(rows1);
+var wallsToggle=new Array(rows1);
+var capsuleToggle=new Array(rows1);
+var pacmanPlaced=false;
+for(var i=0;i<rows1;i++){
+    grid[i]=new Array(columns1);
+    gridNode[i]=new Array(columns1);
+    clickToggle[i]=new Array(columns1);
+    pacmanToggle[i]=new Array(columns1);
+    ghostToggle[i]=new Array(columns1);
+    foodToggle[i]=new Array(columns1);
+    wallsToggle[i]=new Array(columns1);
+    capsuleToggle[i]=new Array(columns1);
+    for(var j=0;j<columns1;j++){
+        grid[i][j]=paper1.rect(10+j*20,100+i*20,20,20).attr({fill:"black", stroke:"white"});
+        pacmanToggle[i][j]=paper1.image("/images/exercises/minimax/pacman.png", 10+j*20,100+i*20,20,20).attr({stroke:"white"}).toFront();
+        ghostToggle[i][j]=paper1.image("/images/exercises/minimax/ghost.png", 10+j*20,100+i*20,20,20).attr({stroke:"white"}).toFront();
+        foodToggle[i][j]=paper1.image("/images/exercises/minimax/food.png", 10+j*20,100+i*20,20,20).attr({stroke:"white"}).toFront();
+
+        wallsToggle[i][j]=paper1.rect(10+j*20,100+i*20,20,20).attr({fill:"white",stroke:"black"}).toFront();
+        capsuleToggle[i][j]=paper1.rect(10+j*20,100+i*20,20,20).attr({fill:"red",stroke:"black"}).toFront();
+        wallsToggle[i][j].hide();
+        capsuleToggle[i][j].hide();
+        foodToggle[i][j].hide();
+        ghostToggle[i][j].hide();
+        pacmanToggle[i][j].hide();
+        gridNode[i][j]=grid[i][j].node;
+        gridNode[i][j].id=("grid"+ i+" "+j);
+        clickToggle[i][j]=0;
+    }
+}
+
+for(var h=0;h<rows1;h++){
+    
+    for(var k=0;k<columns1;k++){
+        var a=grid[h][k],b=pacmanToggle[h][k],c=ghostToggle[h][k],d=foodToggle[h][k],e=wallsToggle[h][k], f=capsuleToggle[h][k];
+        a.click(function(){
+            var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+            clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                pacmanToggle[xc][yc].show().toFront();
+            
+            
+        });
+        b.click(function(){
+            var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+            clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+            
+            pacmanToggle[xc][yc].hide();
+            ghostToggle[xc][yc].show();
+            ghostToggle[xc][yc].toFront();
+            
+            
+        });
+        c.click(function(){
+            var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+            clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+            
+            ghostToggle[xc][yc].hide();
+            foodToggle[xc][yc].show();
+            foodToggle[xc][yc].toFront();
+            
+            
+        });
+        d.click(function(){
+            var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+            clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+            
+            foodToggle[xc][yc].hide();
+            wallsToggle[xc][yc].show();
+            wallsToggle[xc][yc].toFront();
+            
+        });
+    
+        e.click(function(){
+            var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+            clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+            
+            wallsToggle[xc][yc].hide();
+            capsuleToggle[xc][yc].show().toFront();
+            
+        });
+
+        f.click(function(){
+            var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+            clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+            
+            capsuleToggle[xc][yc].hide();
+            grid[xc][yc].toFront();
+            
+        });
+    
+    }
+}
+
+$("#reset").click(function(){
+    for(var i=0;i<rows1;i++){
+    
+        for(var j=0;j<columns1;j++){
+            grid[i][j].hide();
+            wallsToggle[i][j].hide();
+            capsuleToggle[i][j].hide();
+            foodToggle[i][j].hide();
+            ghostToggle[i][j].hide();
+            pacmanToggle[i][j].hide();
+            clickToggle[i][j]=0;
+        }
+    }
+    pacmanPlaced=false;
+    rows1=parseInt($("#rows1").val());
+    columns1=parseInt($("#columns1").val());
+    for(var i=0;i<rows1;i++){
+        grid[i]=new Array(columns1);
+        clickToggle[i]=new Array(columns1);
+        pacmanToggle[i]=new Array(columns1);
+        capsuleToggle[i]=new Array(columns1);
+        ghostToggle[i]=new Array(columns1);
+        foodToggle[i]=new Array(columns1);
+        wallsToggle[i]=new Array(columns1);
+        for(var j=0;j<columns1;j++){
+            grid[i][j]=paper1.rect(10+j*20,100+i*20,20,20).attr({fill:"black", stroke:"white"});
+            wallsToggle[i][j]=paper1.rect(10+j*20,100+i*20,20,20).attr({fill:"white", stroke:"black"});
+            pacmanToggle[i][j]=paper1.image("/images/exercises/minimax/pacman.png", 10+j*20,100+i*20,20,20).attr({stroke:"white"}).toFront();
+            ghostToggle[i][j]=paper1.image("/images/exercises/minimax/ghost.png", 10+j*20,100+i*20,20,20).attr({stroke:"white"}).toFront();
+            foodToggle[i][j]=paper1.image("/images/exercises/minimax/food.png", 10+j*20,100+i*20,20,20).attr({stroke:"white"}).toFront();
+            capsuleToggle[i][j]=paper1.rect(10+j*20,100+i*20,20,20).attr({fill:"red",stroke:"black"}).toFront();
+            capsuleToggle[i][j].hide();
+            foodToggle[i][j].hide();
+            ghostToggle[i][j].hide();
+            pacmanToggle[i][j].hide();
+            wallsToggle[i][j].hide();
+            clickToggle[i][j]=0;
+            
+        }
+    }
+    for(var h=0;h<rows1;h++){
+        
+        for(var k=0;k<columns1;k++){
+            var a=grid[h][k],b=pacmanToggle[h][k],c=ghostToggle[h][k],d=foodToggle[h][k],e=wallsToggle[h][k], f=capsuleToggle[h][k];
+            a.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                    pacmanToggle[xc][yc].show().toFront();
+                
+                
+            });
+            b.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                
+                pacmanToggle[xc][yc].hide();
+                ghostToggle[xc][yc].show();
+                ghostToggle[xc][yc].toFront();
+                
+                
+            });
+            c.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                
+                ghostToggle[xc][yc].hide();
+                foodToggle[xc][yc].show();
+                foodToggle[xc][yc].toFront();
+                
+                
+            });
+            d.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                
+                foodToggle[xc][yc].hide();
+                wallsToggle[xc][yc].show();
+                wallsToggle[xc][yc].toFront();
+                
+            });
+        
+            e.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                
+                wallsToggle[xc][yc].hide();
+                capsuleToggle[xc][yc].show().toFront();
+                
+            });
+
+            f.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                
+                capsuleToggle[xc][yc].hide();
+                grid[xc][yc].toFront();
+                
+            });
+        
+        }
+    }
+});
+
+
+
+$('#rows1,#columns1').bind('change', function() {
+ 
+/*reset all the pacmans and stuff*/
+    for(var i=0;i<rows1;i++){
+    
+        for(var j=0;j<columns1;j++){
+            grid[i][j].hide();
+            wallsToggle[i][j].hide();
+            capsuleToggle[i][j].hide();
+            foodToggle[i][j].hide();
+            ghostToggle[i][j].hide();
+            pacmanToggle[i][j].hide();
+            clickToggle[i][j]=0;
+        }
+    }
+    pacmanPlaced=false;
+    rows1=parseInt($("#rows1").val());
+    columns1=parseInt($("#columns1").val());
+    for(var i=0;i<rows1;i++){
+        grid[i]=new Array(columns1);
+        capsuleToggle[i]=new Array(columns1);
+        clickToggle[i]=new Array(columns1);
+        pacmanToggle[i]=new Array(columns1);
+        ghostToggle[i]=new Array(columns1);
+        foodToggle[i]=new Array(columns1);
+        wallsToggle[i]=new Array(columns1);
+        for(var j=0;j<columns1;j++){
+            grid[i][j]=paper1.rect(10+j*20,100+i*20,20,20).attr({fill:"black", stroke:"white"});
+            wallsToggle[i][j]=paper1.rect(10+j*20,100+i*20,20,20).attr({fill:"white", stroke:"black"});
+            capsuleToggle[i][j]=paper1.rect(10+j*20,100+i*20,20,20).attr({fill:"red", stroke:"black"});
+            pacmanToggle[i][j]=paper1.image("/images/exercises/minimax/pacman.png", 10+j*20,100+i*20,20,20).attr({stroke:"white"}).toFront();
+            ghostToggle[i][j]=paper1.image("/images/exercises/minimax/ghost.png", 10+j*20,100+i*20,20,20).attr({stroke:"white"}).toFront();
+            foodToggle[i][j]=paper1.image("/images/exercises/minimax/food.png", 10+j*20,100+i*20,20,20).attr({stroke:"white"}).toFront();
+            capsuleToggle[i][j].hide();
+            foodToggle[i][j].hide();
+            ghostToggle[i][j].hide();
+            pacmanToggle[i][j].hide();
+            wallsToggle[i][j].hide();
+            clickToggle[i][j]=0;
+            
+        }
+    }
+    for(var h=0;h<rows1;h++){
+        
+        for(var k=0;k<columns1;k++){
+            var a=grid[h][k],b=pacmanToggle[h][k],c=ghostToggle[h][k],d=foodToggle[h][k],e=wallsToggle[h][k], f=capsuleToggle[h][k];
+            a.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                    pacmanToggle[xc][yc].show().toFront();
+                
+                
+            });
+            b.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                
+                pacmanToggle[xc][yc].hide();
+                ghostToggle[xc][yc].show();
+                ghostToggle[xc][yc].toFront();
+                
+                
+            });
+            c.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                
+                ghostToggle[xc][yc].hide();
+                foodToggle[xc][yc].show();
+                foodToggle[xc][yc].toFront();
+                
+                
+            });
+            d.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                
+                foodToggle[xc][yc].hide();
+                wallsToggle[xc][yc].show();
+                wallsToggle[xc][yc].toFront();
+                
+            });
+        
+            e.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                
+                wallsToggle[xc][yc].hide();
+                capsuleToggle[xc][yc].show().toFront();
+                
+            });
+
+            f.click(function(){
+                var xc=((this.attr("y")-100)/20), yc=((this.attr("x")-10)/20);
+                clickToggle[xc][yc]=(clickToggle[xc][yc]+1)%6;
+                
+                capsuleToggle[xc][yc].hide();
+                grid[xc][yc].toFront();
+                
+            });
+        
+        }
+    }
+});
+
+var boards1=[],clickpapers=[],boards1Index=0, pacmans1=[],ghosts1=[],foods1=[], walls=[], ids=[];
+        var toggleShow=true;
+        var Contacts = {
+            index: window.localStorage.getItem("Contacts:index"),
+            $table: document.getElementById("contacts-table"),
+            $button_save: document.getElementById("contacts-op-save"),
+            $button_show:document.getElementById("show-load-table"),
+            $button_save_current:document.getElementById("save_current"),
+            init: function() {
+                
+                // initialize storage index
+                if (!Contacts.index) {
+                    window.localStorage.setItem("Contacts:index", Contacts.index = 1);
+                }
+
+               
+                
+                Contacts.$button_save.addEventListener("click", function(event) {
+                    
+                    var px=[],py=[],gx=[],gy=[], fx=[],fy=[],wx=[],wy=[],cx=[], cy=[];
+                    for(var i=0;i<rows1;i++){
+                        for(var j=0;j<columns1;j++){
+                            if(clickToggle[i][j]==1){
+                                
+                                px.push(j);
+                                py.push(i);
+                            }
+                            if(clickToggle[i][j]==2){
+                                gx.push(j);
+                                gy.push(i);
+                            }
+                            if(clickToggle[i][j]==3){
+                                fx.push(j);
+                                fy.push(i);
+                            }
+                            if(clickToggle[i][j]==4){
+                                wx.push(j);
+                                wy.push(i);
+                            }
+                            if(clickToggle[i][j]==5){
+                                cx.push(j);
+                                cy.push(i);
+                            }
+                        }
+                    }
+                    
+                    var entry = {
+                        id: 0,
+                        pacmanx: px,
+                        pacmany: py,
+                        ghostx: gx,
+                        ghosty: gy,
+                        numFood: fx.length,
+                        rows1: rows1,
+                        columns1: columns1, 
+                        foodx: fx,
+                        foody: fy,
+                        wallsx: wx,
+                        wallsy: wy,
+                        capsulex: cx,
+                        capsuley: cy
+                        
+                    };
+                    if (entry.id == 0) { // add
+                        Contacts.storeAdd(entry);
+                        Contacts.boards1Add(entry);
+                    }
+                    event.preventDefault();
+                }, true);
+                
+                // initialize table
+                
+                if (window.localStorage.length - 1) {
+                    var contacts_list = [], i, key;
+                    for (i = 0; i < window.localStorage.length; i++) {
+                        key = window.localStorage.key(i);
+                        if (/Contacts:\d+/.test(key)) {
+                            contacts_list.push(JSON.parse(window.localStorage.getItem(key)));
+                        }
+                    }
+
+                
+                    if (contacts_list.length) {
+                        contacts_list
+                            .sort(function(a, b) {
+                                return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
+                            })
+                            .forEach(Contacts.boards1Add);
+                    }
+                }
+                
+            },
+
+            storeAdd: function(entry) {
+                entry.id = Contacts.index;
+                window.localStorage.setItem("Contacts:index", ++Contacts.index);
+                window.localStorage.setItem("Contacts:"+ entry.id, JSON.stringify(entry));
+            },
+            
+            storeRemove: function(entry) {
+                window.localStorage.removeItem("Contacts:"+ entry.id);
+            },
+
+            
+            boards1Add: function(entry) {
+                papery+=1000;
+                paper1.setSize(1000,papery);
+                clickpapers[boards1Index]=paper1.rect(0,400+boards1Index*1000,1000,1000).attr({fill:"white"});
+                clickpapers[boards1Index].click(function(){
+                    uncolourAllBoards();
+                    boards1Count=((this.attr("y")-0.5)-400)/1000;
+                    showLoadRemove();
+                    this.attr({stroke:"green", 'stroke-width': 3, fill:"yellow"});
+                });
+                boards1[boards1Index]=paper1.rect(10,500+boards1Index*1000,entry.columns1*20,entry.rows1*20).attr({fill:"black"}).hide();
+                pacmans1[boards1Index]=new Array(entry.pacmanx.length);
+                ghosts1[boards1Index]=new Array(entry.ghostx.length);
+                foods1[boards1Index]=new Array(entry.foodx.length);
+                walls[boards1Index]=new Array(entry.wallsx.length);
+                ids[boards1Index]= entry.id;
+                for(var i=0;i<entry.pacmanx.length;i++){
+                    pacmans1[boards1Index][i]=paper1.image("/images/exercises/minimax/pacman.png", 10+entry.pacmanx[i]*20,500+boards1Index*400 +entry.pacmany[i]*20,20,20).attr({stroke:"white"}).toFront().hide();
+                }
+                for(var i=0;i<entry.ghostx.length;i++){
+                    ghosts1[boards1Index][i]=paper1.image("/images/exercises/minimax/ghost.png", 10+entry.ghostx[i]*20,500+boards1Index*400+ entry.ghosty[i]*20,20,20).attr({stroke:"white"}).toFront().hide();
+                }
+                for(var i=0;i<entry.foodx.length;i++){
+                    foods1[boards1Index][i]=paper1.image("/images/exercises/minimax/food.png", 10+entry.foodx[i]*20,500+boards1Index*400+ entry.foody[i]*20,20,20).attr({stroke:"white"}).toFront().hide();
+                }
+                for(var i=0;i<entry.wallsx.length;i++){
+                    walls[boards1Index][i]=paper1.rect(10+entry.wallsx[i]*20,500+boards1Index*400+ entry.wallsy[i]*20,20,20).attr({fill:"white", stroke:"black"}).toFront().hide();
+                }
+                if(entry.capsulex){
+                    setup(entry.rows1,entry.columns1,entry.foodx,entry.foody,entry.wallsx,entry.wallsy,entry.pacmanx,entry.pacmany,entry.ghostx,entry.ghosty,400,500+ boards1Index*1000,40,"scroller","board"+boards1Index, entry.capsulex, entry.capsuley);
+                }else{
+                    setup(entry.rows1,entry.columns1,entry.foodx,entry.foody,entry.wallsx,entry.wallsy,entry.pacmanx,entry.pacmany,entry.ghostx,entry.ghosty,400,500+ boards1Index*1000,40,"scroller","board"+boards1Index, [], []);
+                }
+
+            
+
+
+
+                boards1Index++;
+            }
+        };
+        function hideAll(){
+            for(var i=0;i<boards1.length;i++){
+                boards1[i].hide();
+                for(var j=0;j<pacmans1[i].length;j++){
+                    pacmans1[i][j].hide();
+                }
+                for(var j=0;j<ghosts1[i].length;j++){
+                    ghosts1[i][j].hide();
+                }
+                for(var j=0;j<foods1[i].length;j++){
+                    foods1[i][j].hide();
+                }
+                for(var j=0;j<walls[i].length;j++){
+                    walls[i][j].hide();
+                }
+                clickpapers[i].hide();
+            }
+
+        }
+
+        boards1Count=0;
+        
+        var remove_button=paper1.circle(150,550,10).attr({fill:"green"}).hide();
+        
+       
+        function uncolourAllBoards(){
+                for(var i=0;i< boards1Index;i++){
+                    clickpapers[i].attr({fill:"white", 'stroke-width':1, stroke:"black"});
+                }
+        }
+        //draw button here for load/remove
+        var load_button=paper1.circle(150,450,10).attr({fill:"blue"}).hide();
+        var play_button=paper1.circle(150,650,10).attr({fill:"red"}).hide();
+        function showLoadRemove(){
+            var loady=(load_button.attr("cy")-0.5), removey=(remove_button.attr("cy")-0.5);
+            load_button.translate(0,(boards1Count-(loady-450)/400)*400);
+            remove_button.translate(0,(boards1Count-(loady-450)/400)*400);
+            play_button.translate(0,(boards1Count-(loady-450)/400)*400);
+            play_button.show().toFront();
+            load_button.show().toFront();
+            remove_button.show().toFront();
+        }
+        
+
+        
+
+        
+
+        Contacts.init();
+        paper1.text(1270,450,"Load for Editing");
+        paper1.text(1250,550,"Remove");
+    
+
+    var paper = new Raphael(document.getElementById('canvas_container'), 2000, 2000);
+    function hideshow(which){
+        if (!document.getElementById)
+        return;
+        if (which.style.display=="inline")
+        which.style.display="none";
+        else
+        which.style.display="inline";
+    }
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    var canvasMove=600;
+    var paperHeight = 50;
+    var paperWidth = 50;
+    var paperPosx=400;
+    var paperPosy=40;
+    var squareSize = 10;
+    var columns = paperWidth / squareSize;
+    var rows = paperHeight / squareSize;
+    var countPress=0,screen1=0,screen2=0,screen3=0,screen4=0,pacDeath=0;
+    var circleList=[],circleListC=0,scoreList=[],scoreListC=0,stackList=[],stackC=0,cSize=640,startIndex=0,startFunc=0,valueList=[],valueC=0,arrowList=[],pathList=[],pathListC=0,historyArrows=[];
+    var treerootposx=cSize/2+canvasMove;
+    var treerootposy=90;
+   //====================
+    var movesList=[], movesListC=0;
+   //====================
+        var minimaxTemp=[-1,-1,[]];
+    
+        
+        
+            
+        var xPosFood=[];
+        var yPosFood=[];
+        var xPosWalls=[];
+        var yPosWalls=[];
+        var numFood;
+        var numWalls;
+        var numPacman;
+        var numGhost;
+        var pPosx=[],gPosx=[],pPosy=[],gPosy=[],cCount=-1;
+        play_button.click(function() {
+            if(boards1.length==0){
+                return;
+            }
+                $("#nextBoard").show();             
+                boardsCount=0;
+                topCmove.hide();    
+                minimaxTemp=[-1,-1,[] ];
+                
+            var current_id = ids[boards1Count];
+            var board_entry = JSON.parse(window.localStorage.getItem("Contacts:"+ current_id));
+            
+                
+                rows=board_entry.rows1;
+                columns=board_entry.columns1;
+            
+                pPosx=board_entry.pacmanx;
+                pPosy=board_entry.pacmany;
+                gPosx=board_entry.ghostx;
+                gPosy=board_entry.ghosty;
+                xPosFood=board_entry.foodx;
+                yPosFood=board_entry.foody;
+                xPosWalls=board_entry.wallsx;
+                yPosWalls=board_entry.wallsy;
+                
+                
+                numWalls=xPosWalls.length;
+                numFood=xPosFood.length;
+                numPacman=pPosx.length;
+                numGhost=gPosx.length;
+                
+        
+            agentTemp=-1;
+            nextAgent=0;
+            exitFlag=0;
+            movesCount=0;
+            minimaxTemp=[-1,-1,[]];
+            circleCount=0;
+            circleList=[];
+            $("#play_game").hide(); 
+            $('#rows1').hide();
+            $('#columns1').hide();
+            $("#depth_input").show();
+            $("#ordering").show();
+            $("#evaL_func_ghostDist").show();
+            $("#eval_func_foodDist").show();
+            $("#eval_func_numFood").show();
+            $("#save_current").show();
+                
+        });
+
+
+        //===================
+
+
+        
+        
+
+
+        ////================
+        var nextText=paper.text(100,50,"").toFront();
+        var utilC=0;
+    
+        
+        //=================================
+
+        var stackFinal=[],stackFinalRect=[];
+        var valueFinal=[],valueFinalRect=[];
+        var depthFinal=[],depthFinalRect=[];
+        var tempFinal=[], tempFinalRect=[];
+        var valFinal=[],valFinalRect=[];
+        var boardFinal=[];
+        var pacmanFinal=[];
+        var ghostFinal=[];
+        
+        var lines=[],linesCount=19;
+        
+        lines[0]="def value(state):";
+        lines[1]="if(terminal_test(state)== true)";
+        lines[2]="compute val=utility(state)";
+        lines[3]="return val";
+        lines[4]="If the next agent is MAX:" ;
+        lines[5]="compute m=max-value(state)";
+        lines[6]="return m";
+        lines[7]="If the next agent is MIN:";
+        lines[8]="compute m= min-value(state)";
+        lines[9]="return m";
+        lines[10]="end";
+        lines[11]="def max-value(state):";
+        lines[12]="Initialize v = -infinity";
+        lines[13]="For a in successors(state):";
+        lines[14]="temp=value(a)";
+        lines[15]="v=max(v, temp) ";
+        lines[16]="Return v";
+        lines[17]="end";
+        lines[18]="def min-value(state):";
+        lines[19]="Initialize v = infinity";
+        lines[20]="For a in successors(state):";
+        lines[21]="temp=value(a)";
+        lines[22]="v=min(v,temp)";
+        lines[23]="Return v";
+        lines[24]="end";
+        var r=[],rCount=19;
+        
+        r[0]=paper.rect(1200,85,300,10).attr({stroke:"white"});
+        r[1]=paper.rect(1200,95,300,10).attr({stroke:"white"});
+        r[2]=paper.rect(1200,105,300,10).attr({stroke:"white"});
+        r[3]=paper.rect(1200,115,300,10).attr({stroke:"white"});
+        r[4]=paper.rect(1200,125,300,10).attr({stroke:"white"});
+        r[5]=paper.rect(1200,135,300,10).attr({stroke:"white"});
+        r[6]=paper.rect(1200,145,300,10).attr({stroke:"white"});
+        r[7]=paper.rect(1200,155,300,10).attr({stroke:"white"});
+        r[8]=paper.rect(1200,165,300,10).attr({stroke:"white"});
+        r[9]=paper.rect(1200,175,300,10).attr({stroke:"white"});
+        r[10]=paper.rect(1200,185,300,10).attr({stroke:"white"});
+        r[11]=paper.rect(1200,205,300,10).attr({stroke:"white"});
+        r[12]=paper.rect(1200,215,300,10).attr({stroke:"white"});
+        r[13]=paper.rect(1200,225,300,10).attr({stroke:"white"});
+        r[14]=paper.rect(1200,235,300,10).attr({stroke:"white"});
+        r[15]=paper.rect(1200,245,300,10).attr({stroke:"white"});
+        r[16]=paper.rect(1200,255,300,10).attr({stroke:"white"});
+        r[17]=paper.rect(1200,265,300,10).attr({stroke:"white"});
+        r[18]=paper.rect(1200,285,300,10).attr({stroke:"white"});
+        r[19]=paper.rect(1200,295,300,10).attr({stroke:"white"});
+        r[20]=paper.rect(1200,305,300,10).attr({stroke:"white"});
+        r[21]=paper.rect(1200,315,300,10).attr({stroke:"white"});
+        r[22]=paper.rect(1200,325,300,10).attr({stroke:"white"});
+        r[23]=paper.rect(1200,335,300,10).attr({stroke:"white"});
+        r[24]=paper.rect(1200,345,300,10).attr({stroke:"white"});
+
+        var box1=paper.rect(1200,85,301,110);
+        var box2=paper.rect(1200,205,301,70);   
+        var box3=paper.rect(1200,285,301,70);
+        var box4=paper.rect(750,60,440,500);
+        box1.hide();
+        box2.hide();
+        box3.hide();
+        box4.hide();
+
+        
+        //================================
+
+        var infinityMin=-10000,infinityMax=10000;
+        var dTop=2;
+        
+        function terminalTest(pPosx,pPosy,gPosx,gPosy,numFood,numPacman,depth){
+            var a;
+            if(numFood==0 || numPacman==0 || depth==0){
+                a= true;
+            }else{
+                a= false;
+            }
+            return a;
+        }
+        
+        function utility(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,numPacman,depth,truescore){
+            if(numPacman==0){
+                return -100+truescore*6;
+            }else  if(numFood==0){
+                return 100+truescore*6;
+            }else{
+                
+                var foodSum=0,ghostSum=0;
+                
+                for(var l=0;l<numFood;l++){
+                    for(var k=0;k<numPacman;k++){
+                        foodSum=foodSum+dist(xPosFood[l],yPosFood[l],pPosx[k],pPosy[k]);
+                    }
+                }
+                for(var l=0;l<numGhost;l++){
+                    for(var k=0;k<numPacman;k++){
+                        ghostSum=ghostSum+dist(gPosx[l],gPosy[l],pPosx[k],pPosy[k]);
+                    }
+                }
+                return ghostSum*$("#evaL_func_ghostDist").val() + foodSum*$("#eval_func_foodDist").val() + numFood*$("#eval_func_numFood").val()+truescore*6;
+            }
+        }
+        
+        function dist(a,b,c,d){
+            return Math.sqrt((a-c)*(a-c) + (b-d)*(b-d));
+        }
+        
+        function legalMoves(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,agent,typeofagent,orderPath){
+            //up=0,left=1,down=2,right=3
+            var posArray=[],index=0, selected_temp=$('#ordering').val();
+            
+            if(orderFlag){
+                var possibleVals=[0,1,2,3];
+                posArray[0]=orderList[orderPath];
+                possibleVals.splice(possibleVals.indexOf(posArray[0]),1);
+                for(var i=1;i<4;i++){
+                    posArray[i]=possibleVals[i-1];
+                }
+
+            }else{
+                for(var u=0;u<4;u++){
+                if(selected_temp[u]=="N"){
+                    posArray.push(0);
+                }else if(selected_temp[u]=="W"){
+                    posArray.push(1);
+                }else if(selected_temp[u]=="S"){
+                    posArray.push(2);
+                }else if(selected_temp[u]=="E"){
+                    posArray.push(3);
+                }
+            }
+            }
+            if(typeofagent==0){
+                if(pPosx[agent]==columns-1){
+                    index = posArray.indexOf(3);
+                    posArray.splice(index,1);
+                }
+                if(pPosx[agent]==0){
+                    index = posArray.indexOf(1);
+                    posArray.splice(index,1);
+                }
+                if(pPosy[agent]==0){
+                    index = posArray.indexOf(0);
+                    posArray.splice(index,1);
+                }
+                if(pPosy[agent]==rows-1){
+                    index = posArray.indexOf(2);
+                    posArray.splice(index,1);
+                }
+
+                if(($.inArray(pPosx[agent], xPosWalls)!=-1) && ($.inArray(pPosy[agent]-1, yPosWalls)!=-1) ){
+                    
+                    for(var i=0;i<xPosWalls.length;i++){
+                        if(xPosWalls[i]==pPosx[agent] && yPosWalls[i]==(pPosy[agent]-1)){
+                            index = posArray.indexOf(0);
+                            posArray.splice(index,1);
+                            break;
+                        }
+                    }
+                }
+                if(($.inArray(pPosx[agent]-1, xPosWalls)!=-1) && ($.inArray(pPosy[agent], yPosWalls)!=-1) ){
+                    for(var i=0;i<xPosWalls.length;i++){
+                        if(xPosWalls[i]==(pPosx[agent]-1) && yPosWalls[i]==(pPosy[agent])){
+                            index = posArray.indexOf(1);
+                            posArray.splice(index,1);
+                            break;
+                        }
+                    }
+                }
+                if(($.inArray(pPosx[agent], xPosWalls)!=-1) && ($.inArray(pPosy[agent]+1, yPosWalls)!=-1) ){
+                    for(var i=0;i<xPosWalls.length;i++){
+                        if(xPosWalls[i]==pPosx[agent] && yPosWalls[i]==(pPosy[agent]+1)){
+                            index = posArray.indexOf(2);
+                            posArray.splice(index,1);
+                            break;
+                        }
+                    }
+                }
+                if(($.inArray(pPosx[agent]+1, xPosWalls)!=-1) && ($.inArray(pPosy[agent], yPosWalls)!=-1) ){
+                    for(var i=0;i<xPosWalls.length;i++){
+                        if(xPosWalls[i]==(pPosx[agent]+1) && yPosWalls[i]==(pPosy[agent])){
+                            index = posArray.indexOf(3);
+                            posArray.splice(index,1);
+                            break;
+                        }
+                    }
+                }
+            }else{
+                if(gPosx[agent]==columns-1){
+                    index = posArray.indexOf(3);
+                    posArray.splice(index,1);
+                }
+                if(gPosx[agent]==0){
+                    index = posArray.indexOf(1);
+                    posArray.splice(index,1);
+                }
+                if(gPosy[agent]==0){
+                    index = posArray.indexOf(0);
+                    posArray.splice(index,1);
+                }
+                if(gPosy[agent]==rows-1){
+                    index = posArray.indexOf(2);
+                    posArray.splice(index,1);
+                }
+                if(($.inArray(gPosx[agent], xPosWalls)!=-1) && ($.inArray(gPosy[agent]-1, yPosWalls)!=-1) ){
+                    
+                    for(var i=0;i<xPosWalls.length;i++){
+                        if(xPosWalls[i]==gPosx[agent] && yPosWalls[i]==(gPosy[agent]-1)){
+                            index = posArray.indexOf(0);
+                            posArray.splice(index,1);
+                            break;
+                        }
+                    }
+                }
+                if(($.inArray(gPosx[agent]-1, xPosWalls)!=-1) && ($.inArray(gPosy[agent], yPosWalls)!=-1) ){
+                    for(var i=0;i<xPosWalls.length;i++){
+                        if(xPosWalls[i]==(gPosx[agent]-1) && yPosWalls[i]==(gPosy[agent])){
+                            index = posArray.indexOf(1);
+                            posArray.splice(index,1);
+                            break;
+                        }
+                    }
+                }
+                if(($.inArray(gPosx[agent], xPosWalls)!=-1) && ($.inArray(gPosy[agent]+1, yPosWalls)!=-1) ){
+                
+                    for(var i=0;i<xPosWalls.length;i++){
+                        if(xPosWalls[i]==gPosx[agent] && yPosWalls[i]==(gPosy[agent]+1)){
+                            index = posArray.indexOf(2);
+                            posArray.splice(index,1);
+                            break;
+                        }
+                    }
+                    
+                }
+                if(($.inArray(gPosx[agent]+1, xPosWalls)!=-1) && ($.inArray(gPosy[agent], yPosWalls)!=-1) ){
+                    for(var i=0;i<xPosWalls.length;i++){
+                        if(xPosWalls[i]==(gPosx[agent]+1) && yPosWalls[i]==(gPosy[agent])){
+                            index = posArray.indexOf(3);
+                            posArray.splice(index,1);
+                            break;
+                        }
+                    }
+                }
+            }
+            return posArray;
+        }
+        
+    
+            
+        
+
+        
+        function max_value(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,numPacman,agent,typeofagent,depth,topPos,topPosy,dtrav,st,valueL,alpha,beta,truescore, traversedpath,orderPath,alphaBetaFlag){
+            movesList[movesListC]=10;
+            movesListC++;
+            movesList[movesListC]=11;
+            movesListC++;
+            stackList[stackC]=st.concat([1]);
+            stackC++;
+            valueList[valueC]=valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),1, "v: "+ infinityMin, ""]]);
+            valueC++;
+            var mT=-1,chosenPath=[],chosenScore=[],pathTempChosen=[];
+            var max=infinityMin,movesLegal=legalMoves(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,agent,typeofagent,orderPath),moves;
+        
+            for(var k=0; k< movesLegal.length; k++){
+                movesList[movesListC]=12;
+                movesListC++;
+
+                
+
+                var moves=movesLegal[k];
+                var xFoodTemp=[],yFoodTemp=[],xPacmanTemp=[],yPacmanTemp=[],xGhostTemp=[],yGhostTemp=[];
+                    xFoodTemp=[],yFoodTemp=[];
+                        for(var p=0;p<xPosFood.length;p++){
+                            xFoodTemp[p]=xPosFood[p];
+                            yFoodTemp[p]=yPosFood[p];
+                        }
+                        xPacmanTemp=[],yPacmanTemp=[];
+                        for(var p=0;p<pPosx.length;p++){
+                            xPacmanTemp[p]=pPosx[p];
+                            yPacmanTemp[p]=pPosy[p];
+                        }
+                        xGhostTemp=[],yGhostTemp=[];
+                        for(var p=0;p<gPosx.length;p++){
+                            xGhostTemp[p]=gPosx[p];
+                            yGhostTemp[p]=gPosy[p];
+                        }
+             
+                var numFoodTemp=numFood;
+                var numPacmanTemp=numPacman;
+                var truescoretemp=truescore;
+                if(moves==0){
+                    pPosy[agent]=pPosy[agent]-1;
+                }else if(moves==1){
+                    pPosx[agent]=pPosx[agent]-1;
+                }else if(moves==2){
+                    pPosy[agent]=pPosy[agent]+1;
+                }else if(moves==3){
+                    pPosx[agent]=pPosx[agent]+1;
+                }
+                
+                for(var i=0;i< numFood;i++){
+                    if(xPosFood[i]==pPosx[agent] && yPosFood[i]==pPosy[agent]){
+                        xPosFood.splice(i,1);
+                        yPosFood.splice(i,1);
+                        numFood--;  
+                        truescore+=10;
+                        if(numFood==0){
+                            truescore+=500;
+                        }
+                        break;
+                    }
+                }
+                var flag=0;
+                if(agent>=(numPacman-1)){
+                    flag=1;
+                }
+                
+                for(var i=0;i< numGhost;i++){
+                    if(gPosx[i]==pPosx[agent] && gPosy[i]==pPosy[agent]){
+                        
+                        var letemp=pPosx.length; 
+                        var counter1=0;
+                        var xt=pPosx.slice();
+                        var yt=pPosy.slice();
+                        pPosx=[];
+                        pPosy=[];
+                        for(var tra=0;tra<letemp;tra++){
+                            if(tra!=agent){
+                                pPosx[counter1]=xt[tra];
+                                pPosy[counter1]=yt[tra];
+                                counter1++;
+                            }
+                        }   
+                        numPacman--;
+                        truescore-=500;
+
+                        break;
+                    }
+                }
+
+
+                
+                
+
+                valueList[valueC]=valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),1,"v: "+max,""]]);
+                valueC++;
+                movesList[movesListC]=13;
+                movesListC++;
+                
+                
+                var topx=topPos-1.5*(cSize/(Math.pow(4,dtrav))) +k*(cSize/(Math.pow(4,dtrav)));
+                var topy=topPosy+70;
+                var wid=(cSize/(Math.pow(4,totdep)));
+                var boardtraversed=setup(rows,columns,xPosFood,yPosFood,xPosWalls,yPosWalls,pPosx,pPosy,gPosx,gPosy,topx + 1.25*wid+230,topy+wid*0.5,9,"canvas_container","bla"+topx);
+                boardtraversed.style.display="none";
+
+
+                arrowList[circleListC]= paper.path("M"+(topPos+wid*0.25)+" "+ (treerootposy-70+(dtrav)*70 +30)+"L" + ((topPos-1.5*(cSize/(Math.pow(4,(dtrav)))) +k*(cSize/(Math.pow(4,(dtrav))))) + wid*0.25)+  " "+ (treerootposy+(dtrav)*70));
+
+                if(terminalTest(pPosx,pPosy,gPosx,gPosy,numFood,numPacman,depth-1)){
+                    circleList[circleListC]=paper.rect(topx-wid*0.25/1.2,topy, wid/1.2,30);
+                }else{
+                    circleList[circleListC]=paper.path("M"+ (topx-wid*0.25) +" "+ topy+ "L" + (topx + wid*0.75)+  " "+ topy+ "L" + (topx + 0.5*wid)+  " "+ (topy+30) + "L" + (topx)+  " "+ (topy+30) + "L" + (topx-0.25*wid) +  " "+ topy);
+                }
+                circleList[circleListC].hide();
+                arrowList[circleListC].hide();
+                chosenPath.push(circleListC);
+                circleListC++;
+
+                
+                
+                var t,tempStorage,pathTemp;
+                if(numGhost==0){
+                    tempStorage=minimax(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,numPacman,0,0,depth-1,topx,topPosy+70,dtrav,st.concat([1]),valueL.concat([[depth,pPosx,pPosy,gPosx,gPosy,xPosFood,yPosFood,1,"v: "+max,""]]),alpha,beta,truescore-1,traversedpath.concat([[boardtraversed,circleListC-1]]),orderPath.concat(moves.toString()),alphaBetaFlag);
+                    t=tempStorage[0];
+                    pathTemp=tempStorage[2];
+                }else if(flag==1){
+
+                    tempStorage=minimax(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,numPacman,0,1,depth-1,topx,topPosy+70,dtrav,st.concat([1]),valueL.concat([[depth,pPosx,pPosy,gPosx,gPosy,xPosFood,yPosFood,1,"v: "+max,""]]),alpha,beta,truescore-1,traversedpath.concat([[boardtraversed,circleListC-1]]),orderPath.concat(moves.toString()),alphaBetaFlag);
+                    t=tempStorage[0];
+                    pathTemp=tempStorage[2];
+                }else{
+                    tempStorage=minimax(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,numPacman,agent+1,0,depth-1,topx,topPosy+70,dtrav,st.concat([1]),valueL.concat([[depth,pPosx,pPosy,gPosx,gPosy,xPosFood,yPosFood,1,"v: "+max,""]]),alpha,beta,truescore-1,traversedpath.concat([[boardtraversed,circleListC-1]]),orderPath.concat(moves.toString()),alphaBetaFlag);
+                    t=tempStorage[0];
+                    pathTemp=tempStorage[2];
+
+                }
+                t=Math.floor(t* 100) / 100;
+                
+                movesList[movesListC]=14;
+                movesListC++;
+                
+                max=Math.max(max,t);
+                if(max==t){
+                    mT=moves;
+                    pathTempChosen=pathTemp.slice();
+                }
+                scoreList[scoreListC]=paper.text(topPos-1.5*(cSize/(Math.pow(4,(dtrav)))) +k*(cSize/(Math.pow(4,(dtrav))))+ wid*0.25,treerootposy+(dtrav)*70 +15, t);
+                chosenScore.push(scoreListC);
+                scoreList[scoreListC].hide();
+                scoreListC++;
+                valueList[valueC]=valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),1,"v: "+max,""]]);
+                valueC++;
+                
+                
+                
+                        for(var p=0;p<xFoodTemp.length;p++){
+                            xPosFood[p]=xFoodTemp[p];
+                            yPosFood[p]=yFoodTemp[p];
+                        }
+                        
+
+                        for(var p=0;p<xPacmanTemp.length;p++){
+                            pPosx[p]=xPacmanTemp[p];
+                            pPosy[p]=yPacmanTemp[p];
+                        }
+                        
+                        for(var p=0;p<xGhostTemp.length;p++){
+                            gPosx[p]=xGhostTemp[p];
+                            gPosy[p]=yGhostTemp[p];
+                        }
+                        
+        
+                numFood=numFoodTemp;
+                numPacman=numPacmanTemp;
+                truescore=truescoretemp;
+                if(alphaBetaFlag){
+                        if(max>=beta){
+                            movesList[movesListC]=15;
+                            movesListC++;
+                            
+                            stackList[stackC]=st;
+                            stackC++;
+                            var x=[];
+                                for(var p=0;p<valueL.length;p++){
+                                    var y;
+                                    
+                                    y=valueL[p].slice(0);
+                                    
+                                    x[p]=y;
+                                }
+                                x[x.length-1][9]="m: " +max;
+                            valueList[valueC]=x;
+                            valueC++;
+                            return [max,mT,pathTempChosen];
+                        }
+                        alpha=Math.max(alpha,max);
+                }
+                
+            }
+            stackList[stackC]=st;
+            stackC++;
+            var x=[];
+                for(var p=0;p<valueL.length;p++){
+                    var y;
+                    
+                    y=valueL[p].slice(0);
+                    
+                    x[p]=y;
+                }
+                x[x.length-1][9]="m: " +max;
+            valueList[valueC]=x;
+            valueC++;
+            movesList[movesListC]=15;
+            movesListC++;
+            orderList[orderPath]=mT;
+            return [max,mT,pathTempChosen];
+            
+        }
+                
+        function min_value(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,numPacman,agent,typeofagent,depth,topPos,topPosy,dtrav,st,valueL,alpha,beta,truescore,traversedpath,orderPath,alphaBetaFlag){
+            console.log(alphaBetaFlag);
+            movesList[movesListC]=16;
+            movesListC++;
+            movesList[movesListC]=17;
+            movesListC++;
+
+            stackList[stackC]=st.concat([2]);
+            stackC++;
+            valueList[valueC]=valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),2,"v: "+infinityMax,""]]);
+            valueC++;
+            var mT=-1,chosenPath=[],chosenScore=[],pathTempChosen;
+            var min=infinityMax,movesLegal=legalMoves(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,agent,typeofagent,orderPath),moves;
+        
+                        console.log(orderPath);
+
+            for(var k=0; k< movesLegal.length; k++){
+                movesList[movesListC]=18;
+                movesListC++;
+                
+                var moves=movesLegal[k];
+                var xFoodTemp=[],yFoodTemp=[],xPacmanTemp=[],yPacmanTemp=[],xGhostTemp=[],yGhostTemp=[];
+                        xFoodTemp=[],yFoodTemp=[];
+                        for(var p=0;p<xPosFood.length;p++){
+                            xFoodTemp[p]=xPosFood[p];
+                            yFoodTemp[p]=yPosFood[p];
+                        }
+                        xPacmanTemp=[],yPacmanTemp=[];
+                        for(var p=0;p<pPosx.length;p++){
+                            xPacmanTemp[p]=pPosx[p];
+                            yPacmanTemp[p]=pPosy[p];
+                        }
+                        xGhostTemp=[],yGhostTemp=[];
+                        for(var p=0;p<gPosx.length;p++){
+                            xGhostTemp[p]=gPosx[p];
+                            yGhostTemp[p]=gPosy[p];
+                        }
+        
+                var numFoodTemp=numFood;
+                var numPacmanTemp=numPacman;
+                var truescoretemp=truescore;
+                if(moves==0){
+                    
+                    gPosy[agent]=gPosy[agent]-1;
+                }else if(moves==1){
+                    
+                    gPosx[agent]=gPosx[agent]-1;
+                }else if(moves==2){
+                    
+                    gPosy[agent]=gPosy[agent]+1;
+                }else if(moves==3){
+                    gPosx[agent]=gPosx[agent]+1;
+                }
+                var flag=0;
+                if(agent>=(numGhost-1)){
+                    flag=1;
+                }
+                
+                for(var i=0;i< numPacman;i++){
+                    if(gPosx[agent]==pPosx[i] && gPosy[agent]==pPosy[i]){
+                        var letemp=pPosx.length; 
+                        var counter1=0;
+                        var xt=pPosx.slice();
+                        var yt=pPosy.slice();
+                        pPosx=[];
+                        pPosy=[];
+                        for(var tra=0;tra<letemp;tra++){
+                            if(tra!=agent){
+                                pPosx[counter1]=xt[tra];
+                                pPosy[counter1]=yt[tra];
+                                counter1++;
+                            }
+                        }   
+                        numPacman--;
+                        truescore-=500;
+                        break;
+                    }
+                }
+                valueList[valueC]=valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),2,"v: "+min,""]]);
+                valueC++;
+                movesList[movesListC]=19;
+                movesListC++;
+                
+                var topx=topPos-1.5*(cSize/(Math.pow(4,(dtrav)))) +k*(cSize/(Math.pow(4,(dtrav))));
+                var topy=topPosy+70;
+                var wid=(cSize/(Math.pow(4,totdep)));
+
+                var boardtraversed=setup(rows,columns,xPosFood,yPosFood,xPosWalls,yPosWalls,pPosx,pPosy,gPosx,gPosy,topx+1.25*wid+230,topy+wid*0.5,9,"canvas_container","bla"+topx);
+                
+                
+                boardtraversed.style.display="none";
+                
+
+                arrowList[circleListC]= paper.path("M"+(topPos+wid*0.25)+" "+ (treerootposy-70+(dtrav)*70 + 30)+"L" + ((topPos-1.5*(cSize/(Math.pow(4,(dtrav)))) +k*(cSize/(Math.pow(4,(dtrav))))) + wid*0.25)+  " "+ (treerootposy+(dtrav)*70));
+                if(terminalTest(pPosx,pPosy,gPosx,gPosy,numFood,numPacman,depth-1)){
+
+                    circleList[circleListC]=paper.rect(topx-wid*0.25/1.2,topy, wid/1.2 ,30);
+                }else{
+                    circleList[circleListC]=paper.path("M"+ topx +" "+ topy+ "L" + (topx + wid*0.5)+  " "+ topy+ "L" + (topx + 0.75*wid)+  " "+ (topy+30) + "L" + (topx-0.25*wid)+  " "+ (topy+30) + "L" + topx+  " "+ topy);
+                }
+                arrowList[circleListC].hide();
+                chosenPath.push(circleListC);
+                circleList[circleListC].hide();
+                circleListC++;
+                
+                
+                var t,tempStorage,pathTemp;
+                
+                if(flag==1){
+                    
+            
+                    tempStorage=minimax(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,numPacman,0,0,depth-1,topx,topPosy+70,dtrav,st.concat([2]),valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),2,"v: "+min,""]]),alpha,beta,truescore-1,traversedpath.concat([[boardtraversed,circleListC-1]]),orderPath.concat(moves.toString()),alphaBetaFlag);
+                    t=tempStorage[0];
+                    pathTemp=tempStorage[2];
+
+                }else{
+
+                    tempStorage=minimax(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,numPacman,agent+1,1,depth-1,topx,topPosy+70,dtrav,st.concat([2]),valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),2,"v: "+min,""]]),alpha,beta,truescore-1,traversedpath.concat([[boardtraversed,circleListC-1]]),orderPath.concat(moves.toString()),alphaBetaFlag);
+                    t=tempStorage[0];
+                    pathTemp=tempStorage[2];
+
+                }
+                t=Math.floor(t * 100) / 100;
+                movesList[movesListC]=20;
+                movesListC++;
+                min=Math.min(min,t);
+                if(min==t){
+                    mT=moves;
+                    pathTempChosen=pathTemp.slice();
+                }
+                scoreList[scoreListC]=paper.text(topPos-1.5*(cSize/(Math.pow(4,(dtrav)))) +k*(cSize/(Math.pow(4,(dtrav))))+ wid*0.25,treerootposy+(dtrav)*70 +15, t);
+                chosenScore.push(scoreListC);
+                scoreList[scoreListC].hide();
+                scoreListC++;
+                valueList[valueC]=valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),2,"v: "+min,""]]);
+                valueC++;
+                
+            
+                        for(var p=0;p<xFoodTemp.length;p++){
+                            xPosFood[p]=xFoodTemp[p];
+                            yPosFood[p]=yFoodTemp[p];
+                        }
+                        
+
+                        for(var p=0;p<xPacmanTemp.length;p++){
+                            pPosx[p]=xPacmanTemp[p];
+                            pPosy[p]=yPacmanTemp[p];
+                        }
+                        
+                        for(var p=0;p<xGhostTemp.length;p++){
+                            gPosx[p]=xGhostTemp[p];
+                            gPosy[p]=yGhostTemp[p];
+                        }
+                        
+        
+                numFood=numFoodTemp;
+                numPacman=numPacmanTemp;
+                truescore=truescoretemp;
+                if(alphaBetaFlag){
+                    if(min<=alpha){
+                        movesList[movesListC]=15;
+                        movesListC++;
+                        
+                        stackList[stackC]=st;
+                        stackC++;
+                        var x=[];
+                            for(var p=0;p<valueL.length;p++){
+                                var y;
+                                
+                                y=valueL[p].slice(0);
+                                
+                                x[p]=y;
+                            }
+                            x[x.length-1][9]="m: " +min;
+                        valueList[valueC]=x;
+                        valueC++;
+                        return [min,mT,pathTempChosen];
+                    }
+                    beta=Math.min(beta,min);
+                }
+                
+            }
+            stackList[stackC]=st;
+            stackC++;
+            var x=[];
+            for(var p=0;p<valueL.length;p++){
+                var y;
+                    
+                y=valueL[p].slice(0);
+                    
+                x[p]=y;
+            }
+            x[x.length-1][9]="m: " +min;
+        
+            valueList[valueC]=x;
+            valueC++;
+            movesList[movesListC]=21;
+            movesListC++;
+            orderList[orderPath]=mT;
+            return [min,mT,pathTempChosen];
+        }
+    
+        function minimax(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,numPacman,agent,typeofagent,depth,topPos,topPosy,dtrav,stackL,valueL,alpha,beta,truescore,traversedpath,orderPath,alphaBetaFlag){
+            stackList[stackC]=stackL.concat([0]);
+            stackC++;
+            valueList[valueC]=valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),0,"agent: "+ agent," "]]);    
+            valueC++;
+            movesList[movesListC]=0;
+            movesListC++;
+            movesList[movesListC]=1;
+            movesListC++
+            if(terminalTest(pPosx,pPosy,gPosx,gPosy,numFood,numPacman,depth)){
+                movesList[movesListC]=2;
+                movesListC++;
+                stackList[stackC]=stackL;
+                stackC++;
+                var c= utility(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,numPacman,depth,truescore);
+                valueList[valueC]=valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),0,"agent: "+ agent, "val: "+c]]); 
+                valueC++;
+                
+                var x=[];
+                for(var p=0;p<valueL.length;p++){
+                    var y;
+                    
+                    y=valueL[p].slice(0);
+                    
+                    x[p]=y;
+                }
+                x[x.length-1][9]="temp: " +c;
+
+                valueList[valueC]=x;
+                valueC++;
+
+                movesList[movesListC]=3;
+                movesListC++;
+                
+                return  [c,0,traversedpath];
+                
+            }else{
+                movesList[movesListC]=4;
+                movesListC++;
+                if(typeofagent==0){
+                    movesList[movesListC]=5;
+                    movesListC++;
+                    var m= max_value(xPosFood.slice(),yPosFood.slice(),pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),numFood,numPacman,agent,typeofagent,depth,topPos,topPosy,dtrav+1,stackL.concat([0]),valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),0,"agent: "+ agent," "]]),alpha,beta,truescore,traversedpath,orderPath,alphaBetaFlag);
+                    movesList[movesListC]=6;
+                    movesListC++;
+                    stackList[stackC]=stackL;
+                    stackC++;
+
+                    if(valueL.length!=0){
+                        var x=[];
+                        for(var p=0;p<valueL.length;p++){
+                            var y;
+                    
+                            y=valueL[p].slice(0);
+                    
+                            x[p]=y;
+                        }
+                        x[x.length-1][9]="temp: " +m[0];
+                        valueList[valueC]=x;
+                    }else{  
+                        valueList[valueC]=valueL;
+                    }
+                    valueC++;
+                    return m;
+                }else{
+                    movesList[movesListC]=7;
+                    movesListC++;
+                    movesList[movesListC]=8;
+                    movesListC++;
+
+                    var l= min_value(xPosFood.slice(),yPosFood.slice(),pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),numFood,numPacman,agent,typeofagent,depth,topPos,topPosy,dtrav+1,stackL.concat([0]),valueL.concat([[depth,pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),xPosFood.slice(),yPosFood.slice(),0,"agent: "+ agent," "]]),alpha,beta,truescore,traversedpath,orderPath,alphaBetaFlag);
+                    movesList[movesListC]=9;
+                    movesListC++;
+                    stackList[stackC]=stackL;
+                    stackC++;
+                    if(valueL.length!=0){
+                        var x=[];
+                        for(var p=0;p<valueL.length;p++){
+                            var y;
+                    
+                            y=valueL[p].slice(0);
+                    
+                            x[p]=y;
+                        }
+                        x[x.length-1][9]="temp: " +l[0];
+                        valueList[valueC]=x;
+                    }else{
+                        valueList[valueC]=valueL;
+                    }
+                    valueC++;
+
+                    return l;
+                }
+                
+            }
+
+        }
+        
+        function uncolourAll(){
+            for(var i=0;i<r.length;i++){
+                r[i].attr({fill:"white"});
+            }
+        }
+
+        
+        function generateStack(cList,vList,startX,startY){
+            var rC=0,lC=0,sC=0;
+            for(var i=0;i<stackFinal.length;i++){
+                stackFinal[i].hide();
+                valueFinal[i].hide();
+                
+                
+                boardFinal[i].hide();
+                for(var j=0;j<pacmanFinal[i].length;j++){
+                    pacmanFinal[i][j].hide();
+                }
+                for(var j=0;j<ghostFinal[i].length;j++){
+                    ghostFinal[i][j].hide();
+                }
+                depthFinal[i].hide();
+                
+                valFinal[i].hide();
+                
+            }
+            for( var i=0;i<cList.length;i++){   
+                if(vList[i][7]==0){
+                    valueFinal[sC]=paper.text(startX+300,startY+ sC*70,vList[i][8]);
+                    depthFinal[sC]=paper.text(startX+300,startY+10+ sC*70,"Depth: "+ (dTop-vList[i][0]));
+                    
+                }else if(vList[i][7]==1){
+                    valueFinal[sC]=paper.text(startX+300,startY+ sC*70,vList[i][8]);
+                    depthFinal[sC]=paper.text(startX+300,startY+10+ sC*70,"Depth: "+(dTop-vList[i][0]));
+                    
+                }else if(vList[i][7]==2){
+                    valueFinal[sC]=paper.text(startX+300,startY+ sC*70,vList[i][8]);
+                    depthFinal[sC]=paper.text(startX+300,startY+10+ sC*70,"Depth: "+(dTop-vList[i][0]));
+                }
+                valFinal[sC]=paper.text(startX+300,startY+20+ sC*70,vList[i][9]);
+                boardFinal[sC]=paper.image("/images/exercises/minimax/emptyboard.png",startX+100,startY+sC*70,columns*squareSize,rows*squareSize);
+                
+                pacmanFinal[sC]=new Array(vList[i][1].length);
+                for(var j=0;j<vList[i][1].length;j++){
+                    pacmanFinal[sC][j]=paper.image("/images/exercises/minimax/pacman.png", vList[i][1][j]*squareSize + startX+100,vList[i][2][j]*squareSize +startY + sC*70, squareSize,squareSize).toFront();
+                }
+                ghostFinal[sC]=new Array(vList[i][3].length);
+                for(var j=0;j<vList[i][3].length;j++){
+                    ghostFinal[sC][j]=paper.image("/images/exercises/minimax/ghost.png", vList[i][3][j]*squareSize + startX+100,vList[i][4][j]*squareSize +startY + sC*70, squareSize,squareSize).toFront();
+                }
+                
+                
+                if(cList[i]==0){
+                    
+                        stackFinal[sC]=paper.text(startX,startY+ sC*70, "value");
+                        sC++;
+                        
+                    
+                }else if(cList[i]==1){
+                    
+                        stackFinal[sC]=paper.text(startX,startY+ sC*70,"max_value");
+                        sC++;
+                }else if(cList[i]==2){
+                    
+                        stackFinal[sC]=paper.text(startX,startY+ sC*70,"min_value");
+                        sC++;
+                    
+                }
+                
+            }
+            
+        }
+//=======================       
+        var topC,topCBoard, topCPacman, topCGhost, topCFood, topCWalls, topCtext,topCmove=paper.text(0,0,"");
+        var totdep=0;
+        var orderList={};
+        var movesCount=0,stackCount=0,valueCount=0,circleCount=0,scoreCount=0,agentTemp=-1,agentType=0,nextAgentTemp=0,nextAgentType=0,runThis=0,exitFlag=0,agentText,pathCount=0;
+        var boards=[],pacmans=[], ghosts=[],boardsCount=0, times=[], movieArrows=[],movieArrowsHead=[],moveText=[], foods=[], wallsMovie=[];
+        var abcd={"a":6};
+        console.log(abcd);
+        var dtravinit=0;
+        var treeDir=-1;
+        var score=0;
+        var orderFlag=false;
+    $("#nextBoard").click(function(){
+        document.getElementById("contacts-op-save").disabled = true;
+        
+        if(exitFlag==0){    
+            document.getElementById("evaL_func_ghostDist").disabled = true;
+            document.getElementById("eval_func_foodDist").disabled = true;
+            document.getElementById("eval_func_numFood").disabled = true;
+
+
+            if(!toggleShow){
+                $("#play_game").hide(); 
+                $("#contacts-op-save").hide();  
+                $('#rows1').hide();
+                $('#reset').hide();
+                $('#columns1').hide();
+                toggleShow=!toggleShow;
+            }
+            
+            dTop=$('#depth_input').val();
+            document.getElementById("depth_input").disabled = true;
+            
+            var interval = setInterval(function(){
+            if(movesCount==0){
+                 if(minimaxTemp[1]==0){
+                    if(agentType==0){
+                        pPosy[agentTemp]=pPosy[agentTemp]-1;
+                    }else{
+                        gPosy[agentTemp]=gPosy[agentTemp]-1;
+                    }
+                }else if(minimaxTemp[1]==1){
+                    if(agentType==0){
+                        pPosx[agentTemp]=pPosx[agentTemp]-1;
+                    }else{
+                        gPosx[agentTemp]=gPosx[agentTemp]-1;
+                    }
+                }else if(minimaxTemp[1]==2){
+                    
+                    if(agentType==0){
+                        pPosy[agentTemp]=pPosy[agentTemp]+1;
+                    }else{
+                        gPosy[agentTemp]=gPosy[agentTemp]+1;
+                    }
+                }else if(minimaxTemp[1]==3){
+                    
+                    if(agentType==0){
+                        pPosx[agentTemp]=pPosx[agentTemp]+1;
+                    }else{
+                        gPosx[agentTemp]=gPosx[agentTemp]+1;
+                    }
+                }
+
+                
+                if(agentType==0){
+                    for(var i=0;i< numFood;i++){
+                        if(xPosFood[i]==pPosx[agentTemp] && yPosFood[i]==pPosy[agentTemp]){
+                            
+                            xPosFood.splice(i,1);
+                            yPosFood.splice(i,1);
+                            numFood--;  
+                            score+=10;
+                            if(numFood==0){
+                                score+=500;
+                            }
+                            break;
+                        }
+                    }
+
+                    for(var i=0;i< numGhost;i++){
+                        if(gPosx[i]==pPosx[agentTemp] && gPosy[i]==pPosy[agentTemp]){
+                            pPosx.splice(agentTemp,1);
+                            pPosy.splice(agentTemp,1);
+                            numPacman--;    
+                            score-=500;
+                            break;
+                        }
+                    }
+
+                }else{
+
+                    for(var i=0;i< numPacman;i++){
+                        if(gPosx[agentTemp]==pPosx[i] && gPosy[agentTemp]==pPosy[i]){
+                            pPosx.splice(i,1);
+                            pPosy.splice(i,1);
+                            numPacman--;    
+                            score-=500;
+                            break;
+                        }
+                    }
+
+                }
+                
+                
+                for(var i=0;i<minimaxTemp[2].length;i++){
+                    minimaxTemp[2][i][0].style.display="none";
+                    
+                    circleList[minimaxTemp[2][i][1]].attr({fill:"white"});
+                    arrowList[minimaxTemp[2][i][1]].attr({fill:"black"});
+
+
+                }
+        
+                
+                if(numPacman==0){
+                    exitFlag=1;
+                    topCmove.hide();
+                    topCmove=paper.text(100,100, "Pacman Died");
+                    topCmove.show();
+                    movesCount=0;
+                    document.getElementById("depth_input").disabled = false;
+                    document.getElementById("contacts-op-save").disabled = false;
+                    document.getElementById("evaL_func_ghostDist").disabled = false;
+                    document.getElementById("eval_func_foodDist").disabled = false;
+                    document.getElementById("eval_func_numFood").disabled = false;  
+                    clearInterval(interval);
+                    return;
+                }
+                if(numFood==0){
+                    exitFlag=1;
+                    topCmove.hide();
+                    topCmove=paper.text(100,100, "Pacman Wins");
+                    topCmove.show();
+                    movesCount=0;
+                    document.getElementById("depth_input").disabled = false;
+                    document.getElementById("contacts-op-save").disabled = false;
+                    document.getElementById("evaL_func_ghostDist").disabled = false;
+                    document.getElementById("eval_func_foodDist").disabled = false;
+                    document.getElementById("eval_func_numFood").disabled = false;
+                    clearInterval(interval);
+                    return; 
+                }
+                
+                 
+                for(var i=0;i<circleList.length;i++){
+                    
+
+                    topCtext.hide();
+                    topCmove.hide();
+                    if(showFlag[3]==0){
+                        circleList[i].hide();
+                        topC.hide();
+                        arrowList[i].hide();
+                    }else{
+                        if(circleList[i].attr("fill")=="green"){
+                            circleList[i].attr({fill:"white"});
+                            circleList[i].attr({opacity:"0.2"});
+                            arrowList[i].attr({opacity:"0.2"});
+                        
+                        }else{
+                            circleList[i].attr({opacity:"0.2"});
+                            arrowList[i].attr({opacity:"0.2"});
+                        }
+
+                    }
+                    scoreList[i].hide();
+                }
+
+                movesCount=0;
+                stackCount=0;
+                valueCount=0;
+                circleCount=0;
+                scoreCount=0;
+                circleList=[];
+                circleListC=0;
+                scoreList=[];
+                scoreListC=0;
+                
+                stackList=[];
+                stackC=0;
+                cSize=640;
+                startIndex=0;
+                startFunc=0;
+                valueList=[];
+                valueC=0;
+                arrowList=[];
+                movesList=[];
+                 movesListC=0;
+                pathCount=0;
+                pathList=[];
+                pathListC=0;
+                orderList={};
+                totdep=dTop;
+                orderFlag=false;
+
+                if(numGhost==0){
+                    totdep=dTop;
+                }
+            
+                    treerootposx=cSize/2+canvasMove;
+                    treerootposy=90;
+                
+
+
+                var wid=(cSize/(Math.pow(4,totdep)));
+                paper.clear();
+                if(nextAgentType==0){
+
+                 topC=paper.path("M"+ (treerootposx) +" "+ treerootposy+ "L" + (treerootposx + wid*0.5)+  " "+ treerootposy+ "L" + (treerootposx + 0.75*wid)+  " "+ (treerootposy+30) + "L" + (treerootposx-0.25*wid)+  " "+ (treerootposy+30) + "L" + (treerootposx) +  " "+ treerootposy);
+                }else{
+                     topC=paper.path("M"+ (treerootposx-0.25*wid) +" "+ treerootposy+ "L" + (treerootposx + wid*0.75)+  " "+ treerootposy+ "L" + (treerootposx + 0.5*wid)+  " "+ (treerootposy+30) + "L" + (treerootposx)+  " "+ (treerootposy+30) + "L" + (treerootposx-0.25*wid) +  " "+ treerootposy);
+                }
+                minimaxTemp=minimax(xPosFood.slice(),yPosFood.slice(),pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),numFood, numPacman, nextAgentTemp,nextAgentType,  dTop,treerootposx,treerootposy,0,[],[], infinityMin, infinityMax,score,[],"",false);
+                for(var i=0;i<circleListC;i++){
+                    circleList[i].show();
+                    arrowList[i].show();
+                    scoreList[i].show();
+                }
+                movesCount=0;
+                stackCount=0;
+                valueCount=0;
+                circleCount=0;
+                scoreCount=0;
+                circleList=[];
+                circleListC=0;
+                scoreList=[];
+                scoreListC=0;
+                
+                stackList=[];
+                stackC=0;
+                cSize=640;
+                startIndex=0;
+                startFunc=0;
+                valueList=[];
+                valueC=0;
+                arrowList=[];
+                movesList=[];
+                 movesListC=0;
+                pathCount=0;
+                pathList=[];
+                pathListC=0;
+                orderFlag=true;
+                treerootposy+= (dTop*70+70);
+                minimaxTemp=minimax(xPosFood.slice(),yPosFood.slice(),pPosx.slice(),pPosy.slice(),gPosx.slice(),gPosy.slice(),numFood, numPacman, nextAgentTemp,nextAgentType,  dTop,treerootposx,treerootposy,0,[],[], infinityMin, infinityMax,score,[],"",true);
+                orderFlag=false;
+
+                console.log(orderList);
+                if(nextAgentType==0){
+
+                 topC=paper.path("M"+ (treerootposx) +" "+ treerootposy+ "L" + (treerootposx + wid*0.5)+  " "+ treerootposy+ "L" + (treerootposx + 0.75*wid)+  " "+ (treerootposy+30) + "L" + (treerootposx-0.25*wid)+  " "+ (treerootposy+30) + "L" + (treerootposx) +  " "+ treerootposy);
+                }else{
+                     topC=paper.path("M"+ (treerootposx-0.25*wid) +" "+ treerootposy+ "L" + (treerootposx + wid*0.75)+  " "+ treerootposy+ "L" + (treerootposx + 0.5*wid)+  " "+ (treerootposy+30) + "L" + (treerootposx)+  " "+ (treerootposy+30) + "L" + (treerootposx-0.25*wid) +  " "+ treerootposy);
+                }
+                var topCBoard=setup(rows,columns,xPosFood,yPosFood,xPosWalls,yPosWalls,pPosx,pPosy,gPosx,gPosy,treerootposx+1.25*wid+230,treerootposy+wid*0.5,9,"canvas_container","top");
+                
+
+                dtravinit++;
+                score--;
+                var tempMoves=legalMoves(xPosFood,yPosFood,pPosx,pPosy,gPosx,gPosy,numFood,nextAgentTemp,nextAgentType);
+                treeDir= tempMoves.indexOf(minimaxTemp[1]);
+                agentType=nextAgentType;
+                agentTemp=nextAgentTemp;
+                if(numGhost>0){
+                    if(nextAgentType==0){
+                        if(nextAgentTemp==numPacman-1){
+
+                            nextAgentType=1;
+                            nextAgentTemp=0;
+                        }else{
+                            nextAgentType=0;
+                            nextAgentTemp++;
+                        }
+                    }else{
+                        if(nextAgentTemp==numGhost-1){
+                            nextAgentType=0;
+                            nextAgentTemp=0;
+                        }else{
+                            nextAgentType=1;
+                            nextAgentTemp++;
+                        }
+                    }
+                }
+                topCtext=paper.text(treerootposx +wid*0.25,treerootposy+15,minimaxTemp[0]);
+                if(agentType==0){
+                    agentText="pacman";
+                }else{
+                    agentText="ghost";
+                }
+                if(minimaxTemp[1]==0){
+                    topCmove=paper.text(100,100, "Selected move: move " + agentText+ " up");
+                }else if(minimaxTemp[1]==1){
+                    topCmove=paper.text(100,100, "Selected move: move " + agentText+ " left");
+                }else if(minimaxTemp[1]==2){
+                    topCmove=paper.text(100,100, "Selected move: move " + agentText+ " down");
+                }else if(minimaxTemp[1]==3){
+                    topCmove=paper.text(100,100, "Selected move: move " + agentText+ " right");
+                }
+                topCmove.hide();
+                topCtext.hide();
+            }
+            if(showFlag[2]==1){
+                generateStack(stackList[stackCount],valueList[valueCount], 800,90);
+                
+            }
+            
+            if(movesList[movesCount]==0){
+                uncolourAll();
+                r[0].attr({fill:"yellow"});     
+            }else if(movesList[movesCount]==1){
+                uncolourAll();
+                r[1].attr({fill:"yellow"});
+            }else if(movesList[movesCount]==2){
+                uncolourAll();
+                r[2].attr({fill:"yellow"});
+                valueCount++;
+                
+            }else if(movesList[movesCount]==3){
+                uncolourAll();
+                r[3].attr({fill:"yellow"});
+                stackCount++;
+                valueCount++;
+                            
+            }else if(movesList[movesCount]==4){
+                uncolourAll();
+                r[4].attr({fill:"yellow"});
+            }else if(movesList[movesCount]==5){
+                uncolourAll();
+                r[5].attr({fill:"yellow"}); 
+                stackCount++;
+                valueCount++;
+            }else if(movesList[movesCount]==6){
+                uncolourAll();
+                r[6].attr({fill:"yellow"});
+                stackCount++;
+                valueCount++;
+            }else if(movesList[movesCount]==7){
+                uncolourAll();
+                r[7].attr({fill:"yellow"});
+            }else if(movesList[movesCount]==8){
+                uncolourAll ();
+                r[8].attr({fill:"yellow"}); 
+                stackCount++;
+                valueCount++;
+            }else if(movesList[movesCount]==9){
+                uncolourAll();
+                r[9].attr({fill:"yellow"});
+                stackCount++;
+                valueCount++;
+            }else if(movesList[movesCount]==10){
+                uncolourAll();
+                r[11].attr({fill:"yellow"});            
+            }else if(movesList[movesCount]==11){
+                uncolourAll();
+                r[12].attr({fill:"yellow"});
+            }else if(movesList[movesCount]==12){
+                uncolourAll();
+                r[13].attr({fill:"yellow"});
+                
+                valueCount++;
+            }else if(movesList[movesCount]==13){
+                uncolourAll();
+                r[14].attr({fill:"yellow"});
+                circleList[circleCount].show();
+                arrowList[circleCount].show();
+
+                circleCount++;
+                stackCount++;
+                valueCount++;
+            }else if(movesList[movesCount]==14){
+                uncolourAll();
+                r[15].attr({fill:"yellow"});
+                if(totdep<3){
+                    scoreList[scoreCount].show();
+                }
+                scoreCount++;
+                valueCount++;
+            }else if(movesList[movesCount]==15){
+                uncolourAll();
+                r[16].attr({fill:"yellow"});
+                stackCount++;
+                valueCount++;
+            }else if(movesList[movesCount]==16){
+                uncolourAll();
+                r[18].attr({fill:"yellow"});
+            }else if(movesList[movesCount]==17){
+                uncolourAll();
+                r[19].attr({fill:"yellow"});            
+            }else if(movesList[movesCount]==18){
+                uncolourAll();
+                r[20].attr({fill:"yellow"});
+                
+                valueCount++;
+            }else if(movesList[movesCount]==19){
+                uncolourAll();
+                r[21].attr({fill:"yellow"});
+                circleList[circleCount].show();
+
+                arrowList[circleCount].show();
+
+                circleCount++;
+                stackCount++;
+                valueCount++;
+            }else if(movesList[movesCount]==20){
+                uncolourAll();
+                r[22].attr({fill:"yellow"});
+                if(totdep<3){
+                    scoreList[scoreCount].show();
+                }
+                scoreCount++;
+                valueCount++;
+            }else if(movesList[movesCount]==21){
+                uncolourAll();
+                r[23].attr({fill:"yellow"});
+                stackCount++;
+                valueCount++;
+            }
+            if(showFlag[1]==0){
+                uncolourAll();
+            }
+            movesCount++;
+            if(showFlag[0]==0){
+                for(var i=0;i<circleCount;i++){
+                        
+                        circleList[i].hide();
+                        arrowList[i].hide();
+                        scoreList[i].hide();
+                }
+                topC.hide();
+                topCBoard.hide();
+                for(var i=0;i <numPacman;i++){
+                    topCPacman[i].hide();   
+                }
+                for(var i=0;i <numGhost;i++){
+                    topCGhost[i].hide();    
+                }
+                for(var i=0;i <numFood;i++){
+                    topCFood[i].hide(); 
+                }
+                for(var i=0;i <numWalls;i++){
+                    topCWalls[i].hide();    
+                }
+            }
+            if($("#stepThrough").is(':checked')){
+                clearInterval(interval);
+            }
+            if(movesCount==movesList.length){
+                if(showFlag[0]==1){
+
+                    topCtext.show();
+                }
+                    topCmove.show();
+                
+                //here  
+                uncolourAll();
+                movesCount=-2;
+                nextText.attr({text:"Implement move and go on to next step"});
+                topC.attr({fill:"green"});  
+                for(var i=0;i<circleListC;i++){
+                    circleList[i].attr({opacity:"0.5"});
+                    arrowList[i].attr({opacity:"0.5"});
+                }
+                for(var i=0;i<minimaxTemp[2].length;i++){
+                    minimaxTemp[2][i][0].style.display="inline";
+                    circleList[minimaxTemp[2][i][1]].attr({fill:"green", opacity: "1"});
+                    arrowList[minimaxTemp[2][i][1]].attr({fill:"green", opacity:"1"});
+                    
+                }
+                
+            }
+            
+            if(movesCount==-1){
+                    
+
+                
+
+                document.getElementById("depth_input").disabled = false;
+                document.getElementById("contacts-op-save").disabled = false;
+                document.getElementById("evaL_func_ghostDist").disabled = false;
+                document.getElementById("eval_func_foodDist").disabled = false;
+                document.getElementById("eval_func_numFood").disabled = false;
+                clearInterval(interval);
+                 return;
+            }
+
+        },20);
+    }
+
+        
+    });
+
+
+
+
+    
+};
+        
+    </script>
+    <div class="scroll" id="scroller"> </div>
+        <div  id="canvas_container" style="margin-left: 200px;"> </div>
+    
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+	  <script type="text/javascript" src="/javascripts/lib/raphael.js"></script>  
+        <script type="text/javascript" src="/javascripts/lib/jquery.js"></script>
+                <script type="text/javascript" src="/javascripts/exercises/minimax/demo_4.js"></script>
+
+	<meta charset="utf-8" />
+<style type="text/css">
+div.minimax
+{
+position:relative;
+top:10px;
+left:300px;
+}
+</style>
+</head>
+<div class="minimax">
+	<svg style="overflow: hidden; position: relative; " height="520" version="1.1" width="860" xmlns="http://www.w3.org/2000/svg">
+	   
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="#ffffff" stroke="#0000ff" d="M397.5,30L462.5,30L480,70L380,70L397.5,30" stroke-width="3" id="path1"></path>
+	  	<foreignObject x="397.5" y="30" width="40" height="30">
+        <body xmlns="http://www.w3.org/1999/xhtml">
+          
+                <input type="text" id ="answer1" style="border-style: solid; height: 20px;" />    
+        </body>
+   			 </foreignObject>
+   		
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="#ffffff" stroke="#0000ff" d="M100,230L200,230L182.5,270L117.5,270L100,230" stroke-width="3" id="path2"></path>
+	  	<foreignObject x="120" y="230" width="40" height="30">
+        <body xmlns="http://www.w3.org/1999/xhtml">
+          
+                <input type="text" id ="answer2" style="border-style: solid; height: 20px;" />    
+        </body>
+   			 </foreignObject>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="#ffffff" stroke="#0000ff" d="M380,230L480,230L462.5,270L397.5,270L380,230" stroke-width="3" id="path3"></path>
+	  	<foreignObject x="400" y="230" width="40" height="30">
+        <body xmlns="http://www.w3.org/1999/xhtml">
+          
+                <input type="text" id ="answer3" style="border-style: solid; height: 20px;" />    
+        </body>
+   			 </foreignObject>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="#ffffff" stroke="#0000ff" d="M660,230L760,230L742.5,270L677.5,270L660,230" stroke-width="3" id="path4"></path>
+	  	<foreignObject x="680" y="230" width="40" height="30">
+        <body xmlns="http://www.w3.org/1999/xhtml">
+          
+                <input type="text" id ="answer4" style="border-style: solid; height: 20px;" />    
+        </body>
+   			 </foreignObject>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M430,70L150,230" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M430,70L430,230" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M430,70L710,230" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M150,270L56.66666666666666,430" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M150,270L150,430" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M150,270L243.33333333333331,430" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M430,270L336.66666666666663,430" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M430,270L430,430" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M430,270L523.3333333333333,430" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M710,270L616.6666666666667,430" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M710,270L710,430" stroke-width="2"></path>
+	  	<path style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " fill="none" stroke="#000000" d="M710,270L803.3333333333333,430" stroke-width="2"></path>
+	  	<text style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-style: normal; font-variant: normal; font-weight: normal; font-size: 24px; line-height: normal; font-family: 'Trebuchet MS'; " x="56.666666666666664" y="450" text-anchor="middle" font="10px &quot;Arial&quot;" stroke="none" fill="#000000" font-size="24px" font-family="Trebuchet MS"  ><tspan id="1" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " dy="8.5">0</tspan></text>
+	  	<text style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-style: normal; font-variant: normal; font-weight: normal; font-size: 24px; line-height: normal; font-family: 'Trebuchet MS'; " x="150" y="450" text-anchor="middle" font="10px &quot;Arial&quot;" stroke="none" fill="#000000" font-size="24px" font-family="Trebuchet MS" ><tspan id="2"style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " dy="8.5">-3</tspan></text>
+	  	<text style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-style: normal; font-variant: normal; font-weight: normal; font-size: 24px; line-height: normal; font-family: 'Trebuchet MS'; " x="243.33333333333331" y="450" text-anchor="middle" font="10px &quot;Arial&quot;" stroke="none" fill="#000000" font-size="24px" font-family="Trebuchet MS" ><tspan id="3" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " dy="8.5">-2</tspan></text>
+
+	  	<text style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-style: normal; font-variant: normal; font-weight: normal; font-size: 24px; line-height: normal; font-family: 'Trebuchet MS'; " x="336.66666666666663" y="450" text-anchor="middle" font="10px &quot;Arial&quot;" stroke="none" fill="#000000" font-size="24px" font-family="Trebuchet MS" ><tspan id="4"style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " dy="8.5">1</tspan></text>
+	  	<text style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-style: normal; font-variant: normal; font-weight: normal; font-size: 24px; line-height: normal; font-family: 'Trebuchet MS'; " x="430" y="450" text-anchor="middle" font="10px &quot;Arial&quot;" stroke="none" fill="#000000" font-size="24px" font-family="Trebuchet MS" ><tspan id="5"style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " dy="8.5">4</tspan></text>
+	  	<text style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-style: normal; font-variant: normal; font-weight: normal; font-size: 24px; line-height: normal; font-family: 'Trebuchet MS'; " x="523.3333333333333" y="450" text-anchor="middle" font="10px &quot;Arial&quot;" stroke="none" fill="#000000" font-size="24px" font-family="Trebuchet MS" ><tspan id="6" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " dy="8.5">2</tspan></text>
+
+
+	  	<text style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-style: normal; font-variant: normal; font-weight: normal; font-size: 24px; line-height: normal; font-family: 'Trebuchet MS'; " x="616.6666666666667" y="450" text-anchor="middle" font="10px &quot;Arial&quot;" stroke="none" fill="#000000" font-size="24px" font-family="Trebuchet MS" ><tspan id="7" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " dy="8.5">3</tspan></text>
+	  	<text style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-style: normal; font-variant: normal; font-weight: normal; font-size: 24px; line-height: normal; font-family: 'Trebuchet MS'; " x="710" y="450" text-anchor="middle" font="10px &quot;Arial&quot;" stroke="none" fill="#000000" font-size="24px" font-family="Trebuchet MS" ><tspan id="8" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " dy="8.5">2</tspan></text>
+	  	<text style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); text-anchor: middle; font-style: normal; font-variant: normal; font-weight: normal; font-size: 24px; line-height: normal; font-family: 'Trebuchet MS'; " x="803.3333333333333" y="450" text-anchor="middle" font="10px &quot;Arial&quot;" stroke="none" fill="#000000" font-size="24px" font-family="Trebuchet MS" ><tspan id="9" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0); " dy="8.5">-4</tspan></text>
+
+	</svg>
+</div>
+<body>
+	<div id="canvas_container">
+       </div>
+</body>
+</html>
+

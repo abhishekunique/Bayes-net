@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Time Complexity</title>
+        <link type="text/css" href="/stylesheets/search/smoothness/jquery-ui-1.8.21.custom.css" rel="stylesheet" />
+        <link type="text/css" href="/stylesheets/search/jquery.cluetip.css" rel="stylesheet" />
+        <link type="text/css" href="/stylesheets/search/search.css" rel="stylesheet" />
+        <script src="/javascripts/lib/raphael.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/javascripts/lib/jquery-1.7.2.min.js" type="text/javascript"></script>
+		<script type="text/javascript" src="/javascripts/lib/jquery-ui-1.8.21.custom.min.js"></script>
+        <script src="/javascripts/lib/jquery.cluetip.min.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/raphael-utils.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/priority_queue.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/utils.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/random-graphs.js" type="text/javascript"></script>
+    
+        <script language="JavaScript">
+            var hide_search_code=0;
+            var tree_search_debugger=0;
+        </script>
+        <script language="JavaScript">
+	    var anspath_coord_x = 420;
+	    var anspath_coord_y= 20;
+	    var curr_cons_x = 230;
+	    var curr_cons_y = 410;
+	    var arrow_size=10;
+	    var node_width=130;
+	    var node_height=50;
+	    var green = "#01df01";
+	    var orange= "#ff9000";
+	    var white = "#fff";
+	    var black = "#000";
+	    var gray = "#E6E6E6";
+        var blue="#0000FF";
+        
+
+	    function setup(new_graph)
+            {
+            $('#try_again').hide();
+            window.n_tries = 3;
+            $('#tries').html(window.n_tries);
+            var randomchoice;
+            if (new_graph || window.graph_idx==null)
+                {
+                randomchoice=Math.floor(Math.random()*possible_graphs.length);
+                window.graph_idx=randomchoice;
+                }
+            else
+                randomchoice = window.graph_idx;
+            var graph_conf = possible_graphs[randomchoice];
+            var pq_search = new search_problem();
+            pq_search.graph_conf = graph_conf;
+            pq_search.alg = $("#alg_select").val();
+            var r = Raphael("holder", pq_search.paper_width+20, 200);
+            var tree_r = Raphael("tree_holder", pq_search.paper_width+550, 2000);
+            var nodes = r.set();
+            var labels = r.set();
+            pq_search.stree_nodes = r.set();
+            pq_search.stree_labels = r.set();
+            
+            var correct_frame = function()
+                {
+                var corr_frame = tree_r.rect(10,0,pq_search.paper_width+290,pq_search.stree_y);
+                corr_frame.attr({'stroke': green, 'stroke-width': 3});
+                pq_search.stree_nodes.unclick(pq_search.add_answer);
+                pq_search.stree_labels.unclick(pq_search.add_answer);
+                }
+                
+            // draw graph
+            pq_search.draw_graph(r,nodes,labels);
+            window.r_holder = r;
+            window.tree_holder = tree_r;
+            window.pq_search = pq_search;
+                   
+            var ret = tree_search(pq_search);
+            //console.log(rt_res);
+            var rt_res = ret[0];
+            window.rt_res = rt_res;
+            var tc_exercise = new exercise();
+            show_search_tree();
+            var add_answer = function()
+                {
+                var obj = this.type == 'rect' ? this : this.pair;
+                var mytxt = obj.pair.attr('text');
+                
+                if (tc_exercise.find_answer(mytxt)
+                    || obj.attr('stroke') == 'red' )
+                    {
+                    obj.attr({'fill': white});
+                    obj.attr({'stroke': black, 'stroke-width': 3});
+                    tc_exercise.del_answer(mytxt);
+                    if (tc_exercise.correct_so_far(rt_res))
+                        pq_search.hint_obj.attr({'text': ''});
+                    if (tc_exercise.verify_answers(rt_res))
+                            correct_frame();
+                    }
+                else
+                    {
+                    if (tc_exercise.is_correct(rt_res,mytxt))
+                        {
+                        tc_exercise.add_answer(mytxt);
+                        obj.attr({'stroke': green, 'stroke-width': 5});
+                        if (tc_exercise.verify_answers(rt_res))
+                            correct_frame();
+                        }
+                    else
+                        {
+                        tc_exercise.add_answer(mytxt);
+                        obj.attr({'stroke': 'red', 'stroke-width': 5,  'fill': 'gray'});
+                        pq_search.hint_obj.attr({'text': 'Incorrect node selected!'});
+                        window.n_tries--;
+                        $('#tries').html(window.n_tries);
+                        if (window.n_tries==-1)
+                            show_answer();
+                        }
+                    }
+                //console.log(tc_exercise.answers);
+                };
+            
+            pq_search.stree_nodes.click(add_answer);
+            pq_search.stree_labels.click(add_answer);
+            pq_search.add_answer = add_answer;
+            
+            }
+        function show_search_tree()
+            {
+            if (!window.tree_shown)
+                {
+                pq_search.stree_y = 5;
+                draw_node(window.tree_holder,"S",window.pq_search);
+                window.tree_shown = 1;
+                }
+            }
+        function draw_node(r, node, problem)
+            {
+            var depth = node.length;
+            if (depth==1)
+                problem.draw_tree_node(r,node, 1 ,depth);
+            var nnodes = new Array;
+            nnodes = next_nodes(node, problem);
+            for (var i = 0; i < nnodes.length; i++)
+                {
+                var simplePath = new String(nnodes[i]);
+                simplePath = simplePath.replace('-','');
+                depth = simplePath.length;
+                if (!problem.pathcost[nnodes[i]])
+                    {
+                    problem.pathcost[nnodes[i]] = problem.pathcost[node]+get_edge_cost(problem.graph_conf, nnodes[i]);
+                    }
+                problem.draw_tree_node(r,nnodes[i], 0 ,depth);
+                draw_node(r,nnodes[i],problem);
+                }
+            }
+	    function next_nodes(node,problem)
+            {
+            var nodes = new Array;
+            var state = node.charAt(node.length-1);
+            for (i = 0; i < problem.graph_conf.edges.length;i++)
+                {
+                if (problem.graph_conf.edges[i][0] == state)
+                nodes.push(node+'-'+problem.graph_conf.edges[i][1]);
+                }
+            return nodes;
+            }
+        function restart_problem(new_graph)
+            {
+            var pq_search = window.pq_search;
+            window.n_tries = 3;
+            pq_search.stree_nodes.unclick(pq_search.add_answer);
+            pq_search.stree_labels.unclick(pq_search.add_answer);
+            clear_canvas(window.r_holder);
+            clear_canvas(window.tree_holder);
+            window.tree_shown=0;
+            //$('#verify_answer').unbind("click");
+            setup(new_graph);
+            }
+        function show_answer()
+            {
+            var pq_search = window.pq_search;
+            window.n_tries = 0;
+            $('#try_again').show();
+            window.pq_search.stree_nodes.attr({'fill': white});
+            for (var i = 0; i < window.rt_res.length; i++)
+                {
+                window.pq_search.stree_obj[window.rt_res[i]].attr({'fill': green});
+                }
+            pq_search.stree_nodes.unclick(pq_search.add_answer);
+            pq_search.stree_labels.unclick(pq_search.add_answer);
+                
+            }
+        function get_edge_cost(conf,node)
+            {
+            var edge;
+            edge = node[node.length-3] + node[node.length-1];
+            for (var i = 0; i< conf.edges.length; i++)
+                if (edge==conf.edges[i])
+                    break;
+            return conf.costs[i];
+            }
+	    
+	</script>
+    </head>
+    <body onload="setup(0);">
+        <h1>Time Complexity</h1>
+        <p>Click on the nodes in the search tree on the right that will be expanded by the selected search strategy. If a node is marked as incorrect, click on it again to deslect it.</p>
+        <div>
+            <div id="holder"></div><div id="tree_holder"></div>
+            <div id="ctrl">Strategy: <select name="alg_select" id="alg_select" onchange="restart_problem(0)">
+                                <option value="DFS" selected="selected">DFS</option>
+                                <option value="BFS">BFS</option>
+                                <option value="UCS">UCS</option>
+                                <option value="Greedy">Greedy</option>
+                                <option value="A*">A*</option>
+                               </select>&nbsp; Search type: <select name="stype" id="stype" onchange="restart_problem(0)">
+                                <option value="tree_search" selected="selected">Tree Search</option>
+                                <option value="graph_search">Graph Search</option>
+                               </select>&nbsp;&nbsp;<br>Click on the nodes in the search tree that will be expanded with the selected strategy.
+                               <br>Number of mistakes allowed before problem is restarted:&nbsp;<span id="tries"></span>
+                                <br><button id="submit_answer">Submit Answer</button><button id="try_again" onclick="restart_problem(1)">Try Again</button>
+            </div>
+        </div>
+    </body>
+</html>

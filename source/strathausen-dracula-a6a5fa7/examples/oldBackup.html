@@ -1,0 +1,942 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+    <script type="text/javascript" src="../js/raphael-min.js"></script>
+    <script type="text/javascript" src="../js/dracula_graffle.js"></script>
+    <script type="text/javascript" src="../js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="../../Downloadify/js/swfobject.js"></script>
+    <script type="text/javascript" src="../../Downloadify/js/downloadify.min.js"></script>
+     <script type="text/javascript">
+     var modeClick=0;
+     var clickCount=0;
+     var prevmodeClick=-1;
+     var thisGraph;
+     var  thisRenderer;
+     var buttonCount,buttonCounter;
+     var paper;
+     var textInstructions, queryButton, inferenceEnumerationButton, variableEliminationButton, variableEliminationVerboseButton, samplingButton;
+     var nodesUsed={};
+     var showActiveFlag=true;
+
+     </script>
+    <script type="text/javascript" src="../js/backup_dracula_graph.js"></script>
+    <script type="text/javascript" src="example.js"></script>
+    <style type="text/css">
+		div.canvas
+		{
+			position:relative;
+			top:0px;
+			right:0px;
+			z-index:1;
+		}		
+        div.create
+        {
+            position:relative;
+            left:360px;
+            z-index:1;
+        }   
+        div.radios
+        {
+            position:relative;
+            left:400px;
+            z-index:1;
+        }   
+        div.radios2
+        {
+            position:absolute;
+            left:930px;
+            top:580px;
+            z-index:300;
+        }   
+        div.solve
+        {
+            position:relative;
+            left:200px;
+            z-index:1;
+        }  
+        div.dSeparate
+        {
+            position:relative;
+            left:360px;
+            z-index:1;
+        }  
+
+        ul#navlist { font-family: sans-serif; }
+
+ul#navlist a
+{
+font-weight: bold;
+text-decoration: none;
+}
+
+ul#navlist, ul#navlist ul, ul#navlist li
+{
+margin: 0px;
+padding: 0px;
+list-style-type: none;
+}
+
+ul#navlist li { float: left; }
+
+ul#navlist li a
+{
+color: #ffffff;
+background-color: #003366;
+padding: 3px;
+border: 1px #ffffff outset;
+}
+
+ul#navlist li a:hover
+{
+color: #ffff00;
+background-color: #003366;
+}
+
+ul#navlist li a:active
+{
+color: #cccccc;
+background-color: #003366;
+border: 1px #ffffff inset;
+}
+
+ul#subnavlist { display: none; }
+ul#subnavlist li { float: none; }
+
+ul#subnavlist li a
+{
+padding: 0px;
+margin: 0px;
+}
+
+ul#navlist li:hover ul#subnavlist
+{
+display: block;
+position: absolute;
+font-size: 8pt;
+padding-top: 5px;
+}
+
+ul#navlist li:hover ul#subnavlist li a
+{
+display: block;
+width: 30em;
+border: none;
+padding: 2px;
+}
+
+ul#navlist li:hover ul#subnavlist li a:before { content: " >> "; }
+
+
+	</style>
+
+
+</head>
+<body >
+<div id="loadNet" style="position:absolute; left: 950px; top:380px; z-index:100;">
+  <div style="position:relative; left:40px;">Saving and Loading Net</br></div>
+  </br>
+<input type="file" id="files" name="file" />  
+</div>
+<script>
+  function readBlob(opt_startByte, opt_stopByte) {
+
+    var files = document.getElementById('files').files;
+    if (!files.length) {
+      alert('Please select a file!');
+      return;
+    }
+
+    var file = files[0];
+    console.log(file.size-1);
+    var start = 0;
+    var stop = file.size - 1;
+
+    var reader = new FileReader();
+
+    // If we use onloadend, we need to check the readyState.
+    reader.onloadend = function(evt) {
+      if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+        
+        var content=evt.target.result;
+        
+        var nodes=[];
+        var positionsx={},positionsy={};
+        var parents={};
+        var currentNode;
+        for(var i=0;i<content.length;i++){
+          console.log(content[i]);
+          if(content[i]=="@"){
+            var tempNodeValue="";
+            for(var j=i+1;content[j]!="|";j++){
+                tempNodeValue+=content[j];
+            }
+            nodes.push(tempNodeValue);
+            j+=2;
+            var xpos="";
+            for( ;content[j]!=",";j++){
+                xpos+=content[j];
+            }
+            j+=1;
+            var ypos="";
+            for(;content[j]!=")";j++){
+                ypos+=content[j];
+            }
+            positionsx[tempNodeValue]=xpos;
+            positionsy[tempNodeValue]=ypos;
+            currentNode=tempNodeValue;
+            parents[currentNode]=[];
+            i=j;
+          }
+          if(content[i]=="!"){
+            var tempNodeValue="";
+            for(var j=i+1;content[j]!="|";j++){
+                tempNodeValue+=content[j];
+            }
+            parents[currentNode].push(tempNodeValue);
+            i=j;
+          }
+        }
+        console.log(nodes);
+        console.log(parents);
+        console.log(positionsx);
+        console.log(positionsy);
+
+        var tablesKeys=Object.keys(tables);  
+
+            for(var i=0;i<tablesKeys.length;i++){
+                    tables[tablesKeys[i]].style.display="none";
+                    flagTable[tablesKeys[i]]=true;  
+            }
+            var observesKeys=Object.keys(observes);  
+
+            for(var i=0;i<observesKeys.length;i++){
+                    observes[observesKeys[i]].style.display="none";
+                    flagObserving[observesKeys[i]]=true;  
+            }
+            var observesKeys=Object.keys(observesQueries);  
+
+            for(var i=0;i<observesKeys.length;i++){
+                    observesQueries[observesKeys[i]].style.display="none";
+                    flagObservingQueries[observesKeys[i]]=true;  
+            }
+         modeClick=0;
+         clickCount=0;
+         prevmodeClick=-1;
+         nodesUsed={};
+        showActiveFlag=true;
+         olddx=0;
+        olddy=0;
+        DSeparationText="";
+         tableFill={};
+         flagObservedNode=false;
+         inferenceObserved={};
+         inferenceObservedQueries={};
+         finalFactors=[];
+         flagObserving={};
+         flagObservingQueries={};
+
+         flagEdge=-1;
+         flagTable={};
+         node1=undefined;
+         node2=undefined;
+         dSepSource=undefined;
+         dSepTarget=undefined;
+         flagSeparation=0;
+         observedNodes=[];
+         nodeSelected;
+         elementOfNode=-1;
+         tables={};
+         tablesVariable={};
+         observes={};
+          observesQueries={};
+
+         var currentNode;
+         var paths=[];
+
+
+        $('input').val(["create"]);
+        $('#filename').val("BayesNet.txt");
+        radioChanger();
+        thisRenderer.r.clear();
+        g1 = new Graph();
+        thisGraph=g1;
+        layouter1 = new Graph.Layout.Spring(g1);
+         thisLayouter=layouter1;
+        renderer1=new Graph.Renderer.Raphael('canvas', g1, 900, 600);
+        thisRenderer=renderer1;
+        
+        for(var i=0;i<nodes.length;i++){
+            renderer1.drawNode(g1.addNode(nodes[i]));
+            nodesUsed[nodes[i]]=1;
+            g1.nodes[nodes[i]].shape.translate(positionsx[nodes[i]]-50, positionsy[nodes[i]]-50);
+        }
+        //layouter1.layout();
+        //renderer1.draw();
+        var parentKeys=Object.keys(parents);
+        for(var i=0;i<parentKeys.length;i++){
+            console.log("inside loop 1");
+            for(var j=0;j<parents[parentKeys[i]].length;j++){
+                
+                    console.log("added edge");
+                    g1.addEdge(parents[parentKeys[i]][j], parentKeys[i], { directed : true });
+                
+            }
+        }
+         
+         renderer1.draw();
+         thisRenderer=renderer1;
+         thisGraph=g1;
+         console.log(g1);
+      }
+    };
+
+    var blob = file.slice(start, stop + 1);
+    reader.readAsBinaryString(blob);
+  }
+  document.getElementById('files').addEventListener('change',function(evt) {
+    
+      var startByte = evt.target.getAttribute('data-startbyte');
+      var endByte = evt.target.getAttribute('data-endbyte');
+      readBlob(startByte, endByte);
+    
+  } , false);
+  /*document.querySelector('.readBytesButtons').addEventListener('click', function(evt) {
+    if (evt.target.tagName.toLowerCase() == 'button') {
+      var startByte = evt.target.getAttribute('data-startbyte');
+      var endByte = evt.target.getAttribute('data-endbyte');
+      readBlob(startByte, endByte);
+    }
+  }, false);*/
+</script>
+<div id="loadNet1" style="position:absolute; left: 950px; top:380px; z-index:100;display:none;">
+  <div style="position:relative; left:80px;">Training Net</br></div>
+  </br>
+<input type="file" id="files1" name="file1" />
+<span class="readBytesButtons1"> 
+  <button style="position:relative; left:-80px;">Learn from Training Data</button>
+  <div>
+      <label for="kSmoother">Smoothing Factor: </label> 
+      <input type="text" id="kSmoother" name="kSmoother" style=" width:40px;"/>
+  </div>
+</span>
+</div>
+<script>
+$('#kSmoother').val(0);
+  var smoother=parseInt($('#kSmoother').val());
+
+  function readBlob1(opt_startByte, opt_stopByte) {
+
+    var files = document.getElementById('files1').files;
+    if (!files.length) {
+      alert('Please select a file!');
+      return;
+    }
+
+    var file = files[0];
+    console.log(file.size-1);
+    var start = 0;
+    var stop = file.size - 1;
+
+    var reader1 = new FileReader();
+
+    // If we use onloadend, we need to check the readyState.
+    reader1.onloadend = function(evt) {
+      if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+        
+        var content=evt.target.result;
+        var order=[];
+        var tempStorer="";
+        for(var i=0;i<content.length;i++){
+          console.log(content[i]);
+          if(content[i]==","){
+            order.push(tempStorer);
+            tempStorer="";
+          }else if(content[i]=="%"){
+            order.push(tempStorer);
+            tempStorer="";
+            break;
+          }else{
+            tempStorer+=content[i];
+          }
+        }
+        console.log(order);
+        i++;
+        var samples=[];
+        var samplesCounter=0;
+        samples[samplesCounter]=new Array();
+        tempStorer="";
+        for(;i<content.length;i++){
+          if(content[i]==","){
+            console.log(tempStorer);
+            samples[samplesCounter].push(tempStorer);
+            tempStorer="";
+          }else if(content[i]=="%"){
+            samples[samplesCounter].push(tempStorer);
+            tempStorer="";
+            samplesCounter++;
+            if(i!=content.length-1){
+              samples[samplesCounter]=new Array();
+            }
+          }else{
+            tempStorer+=content[i];
+          }
+        }
+        var flagMatched=true;
+        for(var i=0;i<order.length;i++){
+          if(!thisGraph.nodes[order[i]]){
+            flagMatched=false;
+          }
+        }
+        var keysTemp=Object.keys(thisGraph.nodes);
+        if(order.length!=keysTemp.length){
+          flagMatched=false;
+        }
+        if(flagMatched){
+          for(var i=0;i<samples.length;i++){
+            for(var j=0;j<samples[i].length;j++){
+              if(thisGraph.nodes[order[j]].domain.indexOf(samples[i][j])==-1){
+                flagMatched=false;
+              }
+            }
+          }
+        }
+        if(!flagMatched){
+          alert("WRONGLY MATCHED INPUT");
+          return;
+        }else{
+          console.log("CORRECT INPUT");
+        }
+        smoother=parseInt($('#kSmoother').val());
+        var keysTemp=Object.keys(thisGraph.nodes);
+        for(var i=0;i<keysTemp.length;i++){
+          console.log(thisGraph.nodes[keysTemp[i]].table);
+          var thisTable=thisGraph.nodes[keysTemp[i]].table;
+          for(var j=1;j<thisTable.length;j++){
+            var queries={}, evidences={};
+            for(var k=0;k<thisTable[j].length-1;k++){
+              if(thisTable[0][k]!=thisGraph.nodes[keysTemp[i]].id){
+                evidences[thisTable[0][k]]=thisTable[j][k];
+              }else{
+                queries[thisGraph.nodes[keysTemp[i]].id]=thisTable[j][k];
+              }
+            }
+            thisTable[j][thisTable[j].length-1]=sampleSelect(order, samples, queries, evidences);
+
+          }
+        }
+        console.log(thisGraph);
+        var tablesKeys=Object.keys(tables);  
+
+                for(var i=0;i<tablesKeys.length;i++){
+                        tables[tablesKeys[i]].style.display="none";
+                        flagTable[tablesKeys[i]]=true;  
+                }
+        var keysTemp=Object.keys(thisGraph.nodes),tempNode;  
+            
+                for(var i=0;i<keysTemp.length;i++){
+                    var tempNode=thisGraph.nodes[keysTemp[i]];
+                    var startX=tempNode.shape[0].attr("cx")+50;
+                    var startY=tempNode.shape[0].attr("cy")+50;
+                    var newDiv = document.createElement("div");
+                    newDiv.style.position='absolute';
+                    newDiv.style.top=startY+"px";
+                    newDiv.style.left=startX+"px";
+                    newDiv.style.zIndex="50";
+                   
+
+                        row=new Array();
+                        cell=new Array();
+
+                        row_num=12; //edit this value to suit
+                        cell_num=12; //edit this value to suit
+
+                        tab=document.createElement('table');
+                        tab.border="1";
+                        tab.style.borderCollapse="collapse";
+                        tab.setAttribute('id','newtable');
+
+                        tbo=document.createElement('tbody');
+                        row[0]=document.createElement('tr');
+                        for(k=0;k<tempNode.table[0].length;k++) {
+                                cell[k]=document.createElement('td');
+                                cell[k].setAttribute("style","background-color: #003366; color:#ffffff");
+                                cont=document.createTextNode(tempNode.table[0][k]);
+                                cell[k].appendChild(cont);
+                                row[0].appendChild(cell[k]);
+                        }
+                        tbo.appendChild(row[0]);
+                        for(c=1;c<tempNode.table.length;c++){
+                            row[c]=document.createElement('tr');
+                            for(k=0;k<tempNode.table[c].length-1;k++) {
+                                cell[k]=document.createElement('td');
+                                if(Math.floor((c-1)/2)%2==0){
+                                    cell[k].style.backgroundColor="#99CCCC";
+                                }else{
+                                    cell[k].style.backgroundColor="white";                        
+                                }
+                                cont=document.createTextNode(tempNode.table[c][k].toLowerCase());
+                                cell[k].appendChild(cont);
+                                row[c].appendChild(cell[k]);
+                            }
+                            cell[k]=document.createElement('td');
+                            cont=document.createTextNode(tempNode.table[c][k]);
+                            
+                            cell[k].appendChild(cont);
+                            row[c].appendChild(cell[k]);
+                            tbo.appendChild(row[c]);
+                        }
+                        
+                        tab.appendChild(tbo);
+                        
+                        
+                        newDiv.appendChild(tab);
+                      var my_div = document.getElementById("canvas");
+                      document.body.insertBefore(newDiv, my_div);
+                      tables[tempNode.id]=newDiv;
+                      flagTable[tempNode.id]=false;
+
+                }
+      }
+    };
+
+    var blob = file.slice(start, stop + 1);
+    reader1.readAsBinaryString(blob);
+  }
+  
+  document.querySelector('.readBytesButtons1').addEventListener('click', function(evt) {
+    if (evt.target.tagName.toLowerCase() == 'button') {
+      var startByte = evt.target.getAttribute('data-startbyte');
+      var endByte = evt.target.getAttribute('data-endbyte');
+      readBlob1(startByte, endByte);
+    }
+  }, false);
+
+
+  function sampleSelect(order,samples, query, evidence){
+    var numQuery=0, numEvidences=0,queryKeys=Object.keys(query), evidenceKeys=Object.keys(evidence);
+    var usedStuff={};
+    
+    for(var i=0;i<samples.length;i++){
+      var tempStorerText="";
+      for(var j=0;j<samples[i].length;j++){
+        tempStorerText+=samples[i][j];
+      }
+      if(!usedStuff[tempStorerText]){
+        usedStuff[tempStorerText]=5;
+        numEvidences+=smoother;
+      }
+      var flag1=0, flag2=0;
+
+      for(var j=0;j<samples[i].length;j++){
+        if(evidence[order[j]] && samples[i][j]!=evidence[order[j]]){
+          flag1=1;
+        }
+        if(query[order[j]] && samples[i][j]!=query[order[j]]){
+          flag2=1;
+        }
+      }
+      if(flag1==0){
+        numEvidences++;
+      }
+      if(flag1==0 && flag2==0){
+        numQuery++;
+      }
+    }
+    numQuery+=smoother;
+    console.log(smoother);
+    console.log(numQuery);
+    console.log(numEvidences);
+    return numQuery/numEvidences;
+  }
+
+
+</script>
+
+
+
+        <div id="saveNet" style="position: absolute; left:950px; top:450px; z-index:200;">
+        <form >
+            <p>
+                <label for="filename">Filename</label><br />
+                <input type="text" name="filename" value="BayesNet.txt" id="filename" />
+            </p>
+            
+            <p id="downloadify">
+                
+            </p>
+        </form>
+        </div>
+        <script type="text/javascript">
+            function load(){
+                Downloadify.create('downloadify',{
+                    filename: function(){
+                        return document.getElementById('filename').value;
+                    },
+                    data: function(){ 
+                        var storeText="";
+                        var keysTemp=Object.keys(thisGraph.nodes);                    
+                        for(var i=0;i<keysTemp.length;i++){
+                            storeText+="@"+keysTemp[i]+"|(" + Math.floor(thisGraph.nodes[keysTemp[i]].shape[0].attr("cx"))+","+Math.floor(thisGraph.nodes[keysTemp[i]].shape[0].attr("cy"))+")";
+                            for(var j=0;j<thisGraph.nodes[keysTemp[i]].parents.length;j++){
+                                storeText+="!"+thisGraph.nodes[keysTemp[i]].parents[j].id+"|";
+                            }
+                        }
+                        return storeText;
+                    },
+                    onComplete: function(){ alert('Your File Has Been Saved!'); },
+                    onCancel: function(){ alert('You have cancelled the saving of this file.'); },
+                    onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
+                    swf: '../../Downloadify/media/downloadify.swf',
+                    downloadImage: '../../Downloadify/images/download.png',
+                    width: 100,
+                    height: 30,
+                    transparent: true,
+                    append: false
+                });
+            }
+        </script>
+
+
+        <div id="saveNet1" style="position: absolute; left:950px; top:450px; z-index:300; display:none;">
+        <form >
+            <p>
+                <label for="filename1">Filename</label><br />
+                <input type="text" name="filename1" value="BayesNet1.txt" id="filename1" />
+            </p>
+            
+            <p id="downloadify1">
+                
+            </p>
+        </form>
+        </div>
+        <script type="text/javascript">
+            function load1(){
+                Downloadify.create('downloadify1',{
+                    filename: function(){
+                        return document.getElementById('filename1').value;
+                    },
+                    data: function(){ 
+                        return generateSamplerText();
+                    },
+                    onComplete: function(){ alert('Your File Has Been Saved!'); },
+                    onCancel: function(){ alert('You have cancelled the saving of this file.'); },
+                    onError: function(){ alert('You must put something in the File Contents or there will be nothing to save!'); },
+                    swf: '../../Downloadify/media/downloadify.swf',
+                    downloadImage: '../../Downloadify/images/download.png',
+                    width: 100,
+                    height: 30,
+                    transparent: true,
+                    append: false
+                });
+            }
+        </script>
+
+
+
+<div id="buttonPaper" class="canvas" ></div>
+<script>
+    load();
+    load1();
+    buttonPaperRaphael=new Raphael(document.getElementById('buttonPaper'),1500,30);
+    textInstructions=buttonPaperRaphael.text(450,10,"");
+    queryButton=buttonPaperRaphael.set().push(buttonPaperRaphael.rect(600,0,100,20).attr({fill:"blue"})).push(buttonPaperRaphael.text(650,10,"Show answer"));
+    queryButton.hide();
+    queryButton.click(pathGenerator);
+    queryBox=buttonPaperRaphael.rect(300,0,300,20);
+    inferenceBox=buttonPaperRaphael.rect(200,0,300,20);
+    inferenceInstructions=buttonPaperRaphael.text(350,10,"");
+    inferenceEnumerationButton=buttonPaperRaphael.set().push(buttonPaperRaphael.rect(500,0,130,20).attr({fill:"yellow"})).push(buttonPaperRaphael.text(565,10,"Inference by enumeration"));
+    inferenceEnumerationButton.hide();
+    //inferenceEnumerationButton.click(inferenceByEnumeration);
+    variableEliminationButton=buttonPaperRaphael.set().push(buttonPaperRaphael.rect(640,0,130,20).attr({fill:"yellow"})).push(buttonPaperRaphael.text(705,10,"Variable Elimination Brief"));
+    variableEliminationButton.hide();
+    //variableEliminationButton.click(finalVariableEliminationQuery)
+    variableEliminationVerboseButton=buttonPaperRaphael.set().push(buttonPaperRaphael.rect(780,0,130,20).attr({fill:"yellow"})).push(buttonPaperRaphael.text(845,10,"Variable Elimination Verbose"));
+    variableEliminationVerboseButton.hide();
+    samplingButton=buttonPaperRaphael.set().push(buttonPaperRaphael.rect(920,0,130,20).attr({fill:"yellow"})).push(buttonPaperRaphael.text(985,10,"Sampling"));
+    samplingButton.hide();
+    //variableEliminationVerboseButton.click(showVariableElimination);
+
+
+</script>
+<div id="create" class="create">
+<div id="navcontainer">
+<ul id="navlist">
+<li><a href="#" onclick="window.location.reload()">Clear Canvas</a></li>
+
+
+</ul>
+<div><br></div>
+    <div><br></div>
+    <div><br></div>
+    <div><br></div>
+</div>
+</div>
+
+
+
+
+
+<div id="solve" class="solve">
+    <div id="navcontainer">
+    <div><br></div>
+    <div><br></div>
+    <div><br></div>
+    <div><br></div>
+    </div>
+
+</div>
+
+
+
+<div id="dSeparate" class="dSeparate">
+    <div id="navcontainer">
+    <ul id="navlist">
+    
+    <li><a href="#" onclick="showActiveTriples();">Show active triples</a></li>
+
+    </ul>
+    <div><br></div>
+    <div><br></div>
+    <div><br></div>
+    <div><br></div>
+    </div>
+
+</div>
+
+
+<div id="radios" class="radios">
+    
+     <input type="radio" name="radio1" value="create" checked> Create
+     <input type="radio" name="radio1" value="dseparate">  D-separate  
+     
+     <input type="radio" name="radio1" value="solve">Solve
+</div>
+<div id="radios2" class="radios2">
+    
+     <input type="radio" name="radio3" value="savingNets" checked> Save and Load Bayes net:
+     <input type="radio" name="radio3" value="trainingNets">  Train net:  
+     
+     
+</div>
+<div id="gettingStarted" style="position:absolute; left:930px; top: 100px; width:250px;height:255px;border:1px solid #000;">
+
+<center><b>Creating Bayesian Net: </b></center>
+<ol><li><i>Double Click on canvas</i> to create node.</li>
+    <li><i>click on blue edge circles</i> to connect nodes.</li>
+    <li><i>click on node</i> to view CPT of node.</li>
+    <li><i>click on edge</i> to delete it.</li>
+    <li><i>Double click in open space</i> to let go of an edge</li>
+    <li><i>Clear Canvas</i> to clean up the canvas.</li> 
+
+</ol>
+</div>
+
+<div id = "queriesInstruc" style="display:none; position:absolute; left:930px; top: 100px; width:250px; height:115px; border:1px solid #000;"> 
+<center><b>D-Separation:</b></center>
+
+<ol><li><i>Double Click</i> to choose nodes to d-separate</li>
+    <li><i>Click to observe node</i>.</li>
+   
+</ul>
+</div>
+
+<div id="solvingInstructions" style=" display:none;position:absolute; left:930px; top: 100px; width:250px;height:155px;border:1px solid #000;">
+
+<center><b>Solving Bayesian Net: </b></center>
+<ol>
+    <li><i>Click on a node</i> to make observations about the value of a node. </li>
+    <li><i>Double Click on a node</i> to select nodes whose probabilites are to be queried.</li>
+
+</ol>
+</div>
+
+
+
+<div id="variableEliminationInstructions" style=" display:none; position:absolute; left:950px; top: 100px; width:250px;height:165px;border:1px solid #000;">
+
+<center><b>Variable Elimination: </b></center>
+<ol><li><i>Join</i> to join based on a variable</li>
+    <li><i>Sum</i> to sum out over a variable</li> 
+</ol>
+</div>
+
+<div id="canvas" class="canvas"></div>    
+<div style="width: 100%; display: table;">
+    <div style="display: table-row">
+        
+        <div id="variableElimination" class="canvas" style="width: 600px; display: table-cell;"></div>
+        <div id="variableEliminationButtons" class="canvas" style="display: table-cell;"></div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$("#solve").hide();
+$('#dSeparate').hide();
+$('input:radio[name=radio1]').bind('change',radioChanger);
+$('input:radio[name=radio3]').bind('change',radio2Changer);
+
+
+ function radio2Changer(){
+    if($('input:radio[name=radio3]:checked').val()=="savingNets"){
+      $("#loadNet1").hide();
+      $("#saveNet1").hide();
+      $("#loadNet").show();
+      $("#saveNet").show();
+    }else{
+      $("#loadNet1").show();
+      $("#saveNet1").show();
+      $("#loadNet").hide();
+      $("#saveNet").hide();
+    }
+
+}
+    function radioChanger(){
+    if($('input:radio[name=radio1]:checked').val()=="create"){
+        hideAllInstructions();
+        $("#gettingStarted").show();
+        $("#solve").hide();
+        $('#dSeparate').hide();
+        $("#create").show();
+        modeClick=0;
+            var keysTemp=Object.keys(thisGraph.nodes);                    
+            for(var i=0;i<keysTemp.length;i++){
+                    thisGraph.nodes[keysTemp[i]].shape[0].attr({stroke:"black", 'stroke-width':2, fill:"white"});
+            }
+            $('#buttonPaper').hide();
+            var tablesKeys=Object.keys(tables);  
+
+            for(var i=0;i<tablesKeys.length;i++){
+                    tables[tablesKeys[i]].style.display="none";
+                    flagTable[tablesKeys[i]]=true;  
+            }
+            var observesKeys=Object.keys(observes);  
+
+            for(var i=0;i<observesKeys.length;i++){
+                    observes[observesKeys[i]].style.display="none";
+                    flagObserving[observesKeys[i]]=true;  
+            }
+            var observesKeys=Object.keys(observesQueries);  
+
+            for(var i=0;i<observesKeys.length;i++){
+                    observesQueries[observesKeys[i]].style.display="none";
+                    flagObservingQueries[observesKeys[i]]=true;  
+            }
+            thisRenderer.trashCan.show();
+    }else if($('input:radio[name=radio1]:checked').val()=="solve"){
+            hideAllInstructions();
+            $("#solve").show();
+            $("#create").hide();
+            $('#dSeparate').hide();
+            $("#solvingInstructions").show();
+            $("#buttonPaper").show();
+            modeClick=4;
+            clickCount=0;
+            var keysTemp=Object.keys(thisGraph.nodes);                    
+            for(var i=0;i<keysTemp.length;i++){
+                thisGraph.nodes[keysTemp[i]].shape[0].attr({stroke:"black", 'stroke-width':2, fill:"white"});
+
+                if(inferenceObservedQueries[keysTemp[i]]){
+                    thisGraph.nodes[keysTemp[i]].shape[0].attr({stroke:"blue", 'stroke-width':5});
+                };
+                if(inferenceObserved[keysTemp[i]]){
+                    thisGraph.nodes[keysTemp[i]].shape[0].attr({fill:"#99CCCC", 'stroke-width':5});
+                }
+            }
+            var keysTemp=Object.keys(inferenceObservedQueries); 
+            if(keysTemp.length!=0){
+                inferenceEnumerationButton.show(); 
+                variableEliminationButton.show();
+                variableEliminationVerboseButton.show();
+                samplingButton.show();
+                $("#probInstructions").show();
+            }
+            var tablesKeys=Object.keys(tables);  
+
+            for(var i=0;i<tablesKeys.length;i++){
+                    tables[tablesKeys[i]].style.display="none";
+                    flagTable[tablesKeys[i]]=true;  
+            }
+            var observesKeys=Object.keys(observes);  
+
+            for(var i=0;i<observesKeys.length;i++){
+                    observes[observesKeys[i]].style.display="none";
+                    flagObserving[observesKeys[i]]=true;  
+            }
+            var observesKeys=Object.keys(observesQueries);  
+
+            for(var i=0;i<observesKeys.length;i++){
+                    observesQueries[observesKeys[i]].style.display="none";
+                    flagObservingQueries[observesKeys[i]]=true;  
+            }
+            textInstructions.hide();
+            inferenceInstructions.show();
+            queryButton.hide();
+            inferenceBox.show();
+            queryBox.hide();
+            thisRenderer.trashCan.hide();
+    }else{
+            hideAllInstructions();
+            $("#solve").hide();
+            $("#create").hide();
+            $('#dSeparate').show();
+            $("#solvingInstructions").show();
+            checkDS();
+            var keysTemp=Object.keys(thisGraph.nodes);                    
+            for(var i=0;i<keysTemp.length;i++){
+                thisGraph.nodes[keysTemp[i]].shape[0].attr({stroke:"black", 'stroke-width':2, fill:"white"});
+
+                if(thisGraph.nodes[keysTemp[i]].targeted==true){
+                    thisGraph.nodes[keysTemp[i]].shape[0].attr({stroke:"blue", 'stroke-width':5});
+                };
+                if(thisGraph.nodes[keysTemp[i]].observed==true){
+                    thisGraph.nodes[keysTemp[i]].shape[0].attr({fill:"#99CCCC", 'stroke-width':5});
+                }
+            }
+            clickCount=0;
+            $('#buttonPaper').show();
+            inferenceEnumerationButton.hide();
+            variableEliminationButton.hide();
+            variableEliminationVerboseButton.hide();
+            samplingButton.hide();
+            var tablesKeys=Object.keys(tables);  
+
+            for(var i=0;i<tablesKeys.length;i++){
+                    tables[tablesKeys[i]].style.display="none";
+                    flagTable[tablesKeys[i]]=true;  
+            }
+            var observesKeys=Object.keys(observes);  
+
+            for(var i=0;i<observesKeys.length;i++){
+                    observes[observesKeys[i]].style.display="none";
+                    flagObserving[observesKeys[i]]=true;  
+            }
+            var observesKeys=Object.keys(observesQueries);  
+
+            for(var i=0;i<observesKeys.length;i++){
+                    observesQueries[observesKeys[i]].style.display="none";
+                    flagObservingQueries[observesKeys[i]]=true;  
+            }
+            textInstructions.show();
+            inferenceInstructions.hide();
+            queryBox.show();
+            inferenceBox.hide();
+            if(dSepSource && dSepTarget){
+                queryButton.show();
+            }
+            thisRenderer.trashCan.hide();
+
+    }
+    };
+console.log($('input:radio[name=radio1]:checked').val());
+$("#currentP").hide();
+$("#buttonPaper").hide();
+
+
+</script>
+
+
+
+
+</body>
+</html>

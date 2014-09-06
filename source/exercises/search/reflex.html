@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Reflex Demos</title>
+        <script src="/javascripts/lib/jquery-1.7.2.min.js" type="text/javascript"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/priority_queue.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/config.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/search.js"></script>  
+        <script type="application/javascript" src="/javascripts/exercises/search/pacman.js"></script>
+        <script language="JavaScript">
+            var config = new Config(30, 10, false);
+            window.interval1 = new Array;
+            function setup(game_id)
+                {
+                $("#run1").removeAttr("disabled");
+                $("#run2").removeAttr("disabled");
+                $("#run3").removeAttr("disabled");
+                $("#status_bar3").html("");
+                var ret;
+                var canvas = document.getElementById("canvas1");
+                //if (window.interval1)
+                //    clearInterval(window.interval1);
+                for (var i = 0; i < window.interval1.length; i++)
+                    clearInterval(window.interval1[i]);
+                    
+                layout1 = ["%%%%%%%%%%%%%%%%%%%%",
+                           "%...%.........%%...%",
+                           "%.%.%.%%%%%%%%%%.%.%",
+                           "%..................%",
+                           "%%%%%%%% % %%%%%%%1%",
+                           "%%%%%%%%           %",
+                           "%%%%%%%%%%%%%%%%%%%%"];
+                
+                layout2 = ["%%%%%%%%%%%%%%%%%%%%",
+                           "%   %.........%%...%",
+                           "% %1%.%%%%%%%%%%.%.%",
+                           "%                  %",
+                           "%%%%%%%%.%.%%%%%%% %",
+                           "%%%%%%%%.......    %",
+                           "%%%%%%%%%%%%%%%%%%%%"];
+                
+                layout3 = ["%%%%%%%%%%%%%%%%%%%%",
+                           "%...%.........%%...%",
+                           "%1%.%.%%%%%%%%%%.%.%",
+                           "%..................%",
+                           "%%%%%%%% % %%%%%%% %",
+                           "%%%%%%%%           %",
+                           "%%%%%%%%%%%%%%%%%%%%"];
+                
+                layout4 = ["%%%%%%%%%%%%%%%%%%%%",
+                           "%   %.........%%...%",
+                           "% %1%.%%%%%%%%%%.%.%",
+                           "%    ..............%",
+                           "%%%%%%%% % %%%%%%% %",
+                           "%%%%%%%%           %",
+                           "%%%%%%%%%%%%%%%%%%%%"];
+                if (!game_id || game_id == 1)
+                    {
+                    layout = layout1;
+                    layout.width = layout[0].length;
+                    layout.height = layout.length;
+                    var game = new Game(layout);
+                    game.config = config;
+                    game.layout = layout;
+                    game.canvas = canvas;
+                    game.resize();
+                    draw(canvas, game);
+                    window.pacman_currgame = game;
+                    }
+                
+                if (!game_id || game_id == 2)
+                    {
+                    var canvas2 = document.getElementById("canvas2");
+                    layout = layout3;
+                    layout.width = layout[0].length;
+                    layout.height = layout.length;
+                    var game2 = new Game(layout);
+                    game2.config = config;
+                    game2.layout = layout;
+                    game2.canvas = canvas2;
+                    game2.resize();
+                    draw(canvas2, game2);
+                    window.pacman_currgame2 = game2;
+                    }
+                
+                if (!game_id || game_id == 3)
+                    {
+                    var canvas3 = document.getElementById("canvas3");
+                    layout = layout4;
+                    layout.width = layout[0].length;
+                    layout.height = layout.length;
+                    var game3 = new Game(layout);
+                    game3.alg="A*";
+                    game3.config = config;
+                    game3.layout = layout;
+                    game3.canvas = canvas3;
+                    game3.resize();
+                    draw(canvas3, game3);
+                    window.pacman_currgame3 = game3;
+                    game3.status_bar = "#status_bar3";
+                    }
+                
+                }
+            function pacman_reset(game)
+                {
+                clearInterval(window.interval1);
+                draw(game.canvas,game);
+                }
+            function run(game, game_id)
+                {
+                var play_reflex = function()
+                    {
+                    var i = 0;
+                    
+                    var action = closest_food_agent(game);
+                    game.execute_action(0,action);
+                    draw(game.canvas,game);
+                    i++; 
+                    };
+                window.interval1[window.interval1.length] = setInterval(play_reflex, rules.TURN_DELAY);
+                if (game_id == 1)
+                    $("#run1").attr("disabled", "disabled");
+                else if (game_id == 2)
+                    $("#run2").attr("disabled", "disabled");
+                }
+            function run_search(game)
+                {
+                game.alg="A*";
+                ret = tree_search(game);
+                
+                //$("#run1").attr("disabled", "disabled");
+                //$("#run2").attr("disabled", "disabled");
+                $("#run3").attr("disabled", "disabled");
+                
+                //$("#reset1").attr("disabled", "disabled");
+                //$("#reset2").attr("disabled", "disabled");
+                $("#reset3").attr("disabled", "disabled");
+                }
+        </script>
+          
+    </head>
+ <body onload="setup(0);">
+        <h1>Reflex Agents</h1>
+        <p>The agent calculates in what direction is the nearest dot, ignoring walls, and moves towards it, until all dots are eaten.</p>
+        <canvas id="canvas1" width="300" height="300"></canvas>
+        <div class="status_bar" id="status_bar1"></div>
+        <button id="run1" onclick="run(window.pacman_currgame,1)">Run</button> &nbsp;<button id="reset1" onclick="setup(1)">Reset</button><br><br>
+        
+        <canvas id="canvas2" width="300" height="300"></canvas>
+        <div class="status_bar" id="status_bar2"></div>
+        <button id="run2" onclick="run(window.pacman_currgame2,2)">Run</button> &nbsp;<button id="reset2" onclick="setup(2)">Reset</button><br><br>
+        
+        <h1>A* search</h1>
+        <p>The agent performs an A* search with a consistent heuristic to find the optimal path to eat all dots, then it moves along that path.</p>
+        <canvas id="canvas3" width="300" height="300"></canvas>
+        <div class="status_bar" id="status_bar3"></div>
+        <button id="run3" onclick="run_search(window.pacman_currgame3,3)">Run</button> &nbsp;<button id="reset3" onclick="setup(3)">Reset</button>
+ </body>
+</html>

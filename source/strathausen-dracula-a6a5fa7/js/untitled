@@ -1,0 +1,473 @@
+function enumerationTest(e,x,graph){
+    var vars=[];
+    var keysTemp=Object.keys(graph.nodes); 
+    for(var i=0;i<keysTemp.length;i++){
+        vars.push(graph.nodes[keysTemp[i]].id);
+    }  
+    var hiddenVars=[];
+
+    for(var i=0;i<vars.length;i++){
+        if(!(e[vars[i]]) && !(x[vars[i]])){
+            hiddenVars.push(vars[i]);
+        }
+    }  
+        var t1;
+        var totalRows=1;
+        var countersMods=[], sources=[];
+        for(var i=0;i<hiddenVars.length;i++){
+                totalRows*=graph.nodes[hiddenVars[i]].domain.length;
+                countersMods.push(graph.nodes[hiddenVars[i]].domain.length);
+                sources.push(graph.nodes[hiddenVars[i]]);
+        }
+        var counters=new Array(countersMods.length);
+        for(var i=0;i<counters.length;i++){
+            counters[i]=1;
+            for(var j=i+1;j<countersMods.length;j++){
+                counters[i]*=countersMods[j];
+            }
+        }
+        var Q=new Array();
+        for(var i=0;i<totalRows;i++){
+            Q[i]=new Array();
+        }
+        for(var i=0;i<counters.length;i++){
+            var flag=0,tempCounter=0;
+            for(var j=0;j<totalRows;j++){
+                  Q[j][i]=sources[i].domain[flag];
+                  tempCounter++;
+                  if((tempCounter%counters[i])==0){
+                    flag=(flag+1)%countersMods[i];
+                  }
+            }
+
+        }
+        var keysTemp=Object.keys(e); 
+        for(var i=0;i<keysTemp.length;i++){
+            sources.push(graph.nodes[keysTemp[i]]);
+        }
+        for(var j=0;j<totalRows;j++){
+            for(var i=0;i<keysTemp.length;i++){
+                Q[j].push(e[keysTemp[i]]);
+                
+            } 
+        }
+        var keysTemp=Object.keys(x); 
+        for(var i=0;i<keysTemp.length;i++){
+            sources.push(graph.nodes[keysTemp[i]]);
+        }
+        for(var j=0;j<totalRows;j++){
+            for(var i=0;i<keysTemp.length;i++){
+                Q[j].push(x[keysTemp[i]]);
+            } 
+        }
+        console.log(Q);
+        var probTotal=0;
+        var tempStorer=[];
+        for(var i=0;i<Q.length;i++){
+            tempStorer.push(Q[i].slice());
+        }
+        for(i=0;i<Q.length;i++){
+            var tempProduct=1;
+            console.log("==========");
+            var tempEvidences={};
+            for(var j=0;j<Q[0].length;j++){
+                tempEvidences[sources[j].id]=Q[i][j];
+            }
+            for(var j=0;j<vars.length;j++){
+                tempProduct*=getProb(vars[j],Q[i],graph,sources.slice(),tempEvidences);
+               //console.log(tempProduct);
+            }
+            console.log("==========");
+            tempStorer[i].push(tempProduct);
+            probTotal+=tempProduct;                    
+        }
+        console.log(tempStorer);
+        return tempStorer;
+
+}
+
+function getProb(varsConsidered, evidences,graph,sources, evidencesDict){
+    var node=graph.nodes[varsConsidered];
+    console.log(node.parents);
+    var flag=true;
+    for(var i=0;i<node.table.length;i++){
+        flag=true;
+        for(j=0;j<(node.sources.length);j++){
+            if(evidencesDict[(node.sources[j]).id]){
+                if(node.table[i][j]!=evidencesDict[node.sources[j].id]){
+                    flag=false;
+                    break;
+                }
+            }
+        }
+        if(flag){
+            console.log(node.table[i]);
+            return node.table[i][node.table[i].length-1];
+        }
+    }
+    
+}
+
+function getFinalInference(e,x,graph){
+    if(outputTableDiv){
+        outputTableDiv.style.display="none";
+    } 
+    var vars=[];
+    var keysTemp=Object.keys(x); 
+    for(var i=0;i<keysTemp.length;i++){
+        vars.push(graph.nodes[keysTemp[i]].id);
+    }
+    var t1;
+    var totalRows=1;
+    var countersMods=[], sources=[];
+    for(var i=0;i<vars.length;i++){
+        totalRows*=graph.nodes[vars[i]].domain.length;
+        countersMods.push(graph.nodes[vars[i]].domain.length);
+        sources.push(graph.nodes[vars[i]]);
+    }
+    var counters=new Array(countersMods.length);
+        for(var i=0;i<counters.length;i++){
+            counters[i]=1;
+            for(var j=i+1;j<countersMods.length;j++){
+                counters[i]*=countersMods[j];
+            }
+        }
+        //console.log(counters);
+        var Q=new Array();
+        for(var i=0;i<totalRows;i++){
+            Q[i]=new Array();
+        }
+        for(var i=0;i<counters.length;i++){
+            var flag=0,tempCounter=0;
+            for(var j=0;j<totalRows;j++){
+                  Q[j][i]=sources[i].domain[flag];
+                  tempCounter++;
+                  if((tempCounter%counters[i])==0){
+                    flag=(flag+1)%countersMods[i];
+                  }
+            }
+
+        }
+        console.log(Q);
+        var reqdVal=enumerationTest(e,x,graph);
+        var sumVals=0;
+        console.log(Q);
+        var allCases=[];
+        for(var i=0;i<Q.length;i++){
+            var tempEvidencesFinal={};
+            for(var j=0;j<Q[i].length;j++){
+                tempEvidencesFinal[sources[j].id]=Q[i][j];
+            }
+            console.log(tempEvidencesFinal);
+            allCases.push(enumerationTest({},tempEvidencesFinal,graph));
+            //sumVals+=enumerationTest({},tempEvidencesFinal,graph);
+        }
+        /*for(var i=0;i<allCases.length;i++){
+            allCases[i]=allCases[i]/sumVals;
+        }*/
+        console.log(allCases);
+        var finalFullJoint=[];
+        for(var i=0;i<allCases.length;i++){
+            for(var j=0;j<allCases[i].length;j++){
+                finalFullJoint.push(allCases[i][j]);
+            }
+        }
+        console.log(finalFullJoint);
+        var hiddenVars=[];
+        vars=[];
+        sources=[];
+        var keysTemp=Object.keys(graph.nodes); 
+        for(var i=0;i<keysTemp.length;i++){
+            vars.push(graph.nodes[keysTemp[i]].id);
+        }  
+        for(var i=0;i<vars.length;i++){
+            if(!(x[vars[i]])){
+                hiddenVars.push(vars[i]);
+            }
+        }  
+        console.log(hiddenVars);
+        for(var i=0;i<hiddenVars.length;i++){
+            sources.push(graph.nodes[hiddenVars[i]]);
+        }
+
+        var keysTemp=Object.keys(x); 
+        for(var i=0;i<keysTemp.length;i++){
+            sources.push(graph.nodes[keysTemp[i]]);
+        }
+        console.log(sources);
+                    
+                    var newDiv = document.createElement("div");
+                    newDiv.style.position='absolute';
+                    newDiv.style.top="500px";
+                    newDiv.style.left="500px";
+                    newDiv.style.zIndex="600";
+                        row=new Array();
+                        cell=new Array();
+
+                        row_num=12; //edit this value to suit
+                        cell_num=12; //edit this value to suit
+
+                        tab=document.createElement('table');
+                        tab.border="1";
+                        tab.style.borderCollapse="collapse";
+
+                        tab.setAttribute('id','newtable');
+
+                        tbo=document.createElement('tbody');
+                        row[0]=document.createElement('tr');
+                        for(k=0;k<sources.length;k++) {
+                                cell[k]=document.createElement('td');
+                                cell[k].setAttribute("style","background-color: #003366; color:#ffffff");
+
+                                cont=document.createTextNode(sources[k].id);
+                                cell[k].appendChild(cont);
+                                row[0].appendChild(cell[k]);
+                        }
+                                cell[k]=document.createElement('td');
+                                cell[k].setAttribute("style","background-color: #003366; color:#ffffff");
+
+                                cont=document.createTextNode("P");
+                                cell[k].appendChild(cont);
+                                row[0].appendChild(cell[k]);
+                        tbo.appendChild(row[0]);
+                        for(c=0;c<finalFullJoint.length;c++){
+                            row[c+1]=document.createElement('tr');
+                            for(k=0;k<finalFullJoint[c].length;k++) {
+                                cell[k]=document.createElement('td');
+                                if(Math.floor((c-1)/2)%2==0){
+                                    cell[k].style.backgroundColor="#99CCCC";
+                                }else{
+                                    cell[k].style.backgroundColor="white";                        
+                                }
+                                cont=document.createTextNode(finalFullJoint[c][k]);
+                                cell[k].appendChild(cont);
+                                row[c+1].appendChild(cell[k]);
+                            }
+                            /*cell[k]=document.createElement('td');
+                            cont=document.createTextNode(allCases[c]);
+                            cell[k].appendChild(cont);
+                            row[c+1].appendChild(cell[k]);*/
+                            tbo.appendChild(row[c+1]);
+                        }
+                        
+                        tab.appendChild(tbo);
+                        
+                        
+                        newDiv.appendChild(tab);
+                        
+                      var my_div = document.getElementById("canvas");
+
+                      document.body.insertBefore(newDiv, my_div);
+                      
+        vars=[];
+        var keysTemp=Object.keys(x); 
+        for(var i=0;i<keysTemp.length;i++){
+            vars.push(graph.nodes[keysTemp[i]].id);
+        }
+        var t1;
+        var totalRows=1;
+        var countersMods=[], sources=[];
+        for(var i=0;i<vars.length;i++){
+            totalRows*=graph.nodes[vars[i]].domain.length;
+            countersMods.push(graph.nodes[vars[i]].domain.length);
+            sources.push(graph.nodes[vars[i]]);
+        }
+        var counters=new Array(countersMods.length);
+            for(var i=0;i<counters.length;i++){
+                counters[i]=1;
+                for(var j=i+1;j<countersMods.length;j++){
+                    counters[i]*=countersMods[j];
+                }
+            }
+            //console.log(counters);
+            var Q=new Array();
+            for(var i=0;i<totalRows;i++){
+                Q[i]=new Array();
+            }
+            for(var i=0;i<counters.length;i++){
+                var flag=0,tempCounter=0;
+                for(var j=0;j<totalRows;j++){
+                      Q[j][i]=sources[i].domain[flag];
+                      tempCounter++;
+                      if((tempCounter%counters[i])==0){
+                        flag=(flag+1)%countersMods[i];
+                      }
+                }
+
+            }
+            console.log(Q);
+            var reqdVal=enumerationTest(e,x,graph);
+            var sumVals=0;
+            console.log(Q);
+            var allCases=[];
+            for(var i=0;i<Q.length;i++){
+                var tempEvidencesFinal={};
+                for(var j=0;j<Q[i].length;j++){
+                    tempEvidencesFinal[sources[j].id]=Q[i][j];
+                }
+                console.log(tempEvidencesFinal);
+                allCases.push(enumerationTest(e,tempEvidencesFinal,graph));
+                //sumVals+=enumerationTest({},tempEvidencesFinal,graph);
+            }
+            console.log(Q);
+            console.log(allCases);
+            var secondTable=[];
+            var sumSecond=0;
+            for(var i=0;i<allCases.length;i++){
+                var totalSum=0;
+                secondTable[i]=new Array();
+                for(var j=0;j<allCases[i].length;j++){
+                    totalSum+=allCases[i][j][allCases[i][j].length-1];
+                }
+                var keysTemp=Object.keys(e); 
+                for(var j=0;j<keysTemp.length;j++){
+                    secondTable[i].push(e[keysTemp[j]]);
+                }
+                for(var j=0;j<Q[i].length;j++){
+                    secondTable[i].push(Q[i][j]);
+                }
+                secondTable[i].push(totalSum);
+                sumSecond+=totalSum;
+            }
+            console.log(secondTable);
+                sources=[];
+                var keysTemp=Object.keys(e); 
+                for(var i=0;i<keysTemp.length;i++){
+                    sources.push(graph.nodes[keysTemp[i]]);
+                }
+                var keysTemp=Object.keys(x); 
+                for(var i=0;i<keysTemp.length;i++){
+                    sources.push(graph.nodes[keysTemp[i]]);
+                }
+                    var newDiv = document.createElement("div");
+                    newDiv.style.position='absolute';
+                    newDiv.style.top="500px";
+                    newDiv.style.left="700px";
+                    newDiv.style.zIndex="600";
+                        row=new Array();
+                        cell=new Array();
+
+                        row_num=12; //edit this value to suit
+                        cell_num=12; //edit this value to suit
+
+                        tab=document.createElement('table');
+                        tab.border="1";
+                        tab.style.borderCollapse="collapse";
+
+                        tab.setAttribute('id','newtable');
+
+                        tbo=document.createElement('tbody');
+                        row[0]=document.createElement('tr');
+                        for(k=0;k<sources.length;k++) {
+                                cell[k]=document.createElement('td');
+                                cell[k].setAttribute("style","background-color: #003366; color:#ffffff");
+
+                                cont=document.createTextNode(sources[k].id);
+                                cell[k].appendChild(cont);
+                                row[0].appendChild(cell[k]);
+                        }
+                                cell[k]=document.createElement('td');
+                                cell[k].setAttribute("style","background-color: #003366; color:#ffffff");
+
+                                cont=document.createTextNode("P");
+                                cell[k].appendChild(cont);
+                                row[0].appendChild(cell[k]);
+                        tbo.appendChild(row[0]);
+                        for(c=0;c<secondTable.length;c++){
+                            row[c+1]=document.createElement('tr');
+                            for(k=0;k<secondTable[c].length;k++) {
+                                cell[k]=document.createElement('td');
+                                if(Math.floor((c-1)/2)%2==0){
+                                    cell[k].style.backgroundColor="#99CCCC";
+                                }else{
+                                    cell[k].style.backgroundColor="white";                        
+                                }
+                                cont=document.createTextNode(secondTable[c][k]);
+                                cell[k].appendChild(cont);
+                                row[c+1].appendChild(cell[k]);
+                            }
+                            tbo.appendChild(row[c+1]);
+                        }
+                        
+                        tab.appendChild(tbo);
+                        
+                        
+                        newDiv.appendChild(tab);
+                        
+                      var my_div = document.getElementById("canvas");
+
+                      document.body.insertBefore(newDiv, my_div);
+                      
+                for(var j=0;j<secondTable.length;j++){
+                    secondTable[j][secondTable[j].length-1]=secondTable[j][secondTable[j].length-1]/sumSecond;
+                }
+                console.log(secondTable);
+                sources=[];
+                var keysTemp=Object.keys(x); 
+                for(var i=0;i<keysTemp.length;i++){
+                    sources.push(graph.nodes[keysTemp[i]]);
+                }
+                for(var i=0;i<Q.length;i++){
+                    Q[i].push(secondTable[i][secondTable[i].length-1]);
+                }
+                var newDiv = document.createElement("div");
+                    newDiv.style.position='absolute';
+                    newDiv.style.top="500px";
+                    newDiv.style.left="900px";
+                    newDiv.style.zIndex="600";
+                        row=new Array();
+                        cell=new Array();
+
+                        row_num=12; //edit this value to suit
+                        cell_num=12; //edit this value to suit
+
+                        tab=document.createElement('table');
+                        tab.border="1";
+                        tab.style.borderCollapse="collapse";
+
+                        tab.setAttribute('id','newtable');
+
+                        tbo=document.createElement('tbody');
+                        row[0]=document.createElement('tr');
+                        for(k=0;k<sources.length;k++) {
+                                cell[k]=document.createElement('td');
+                                cell[k].setAttribute("style","background-color: #003366; color:#ffffff");
+
+                                cont=document.createTextNode(sources[k].id);
+                                cell[k].appendChild(cont);
+                                row[0].appendChild(cell[k]);
+                        }
+                                cell[k]=document.createElement('td');
+                                cell[k].setAttribute("style","background-color: #003366; color:#ffffff");
+
+                                cont=document.createTextNode("P");
+                                cell[k].appendChild(cont);
+                                row[0].appendChild(cell[k]);
+                        tbo.appendChild(row[0]);
+                        for(c=0;c<Q.length;c++){
+                            row[c+1]=document.createElement('tr');
+                            for(k=0;k<Q[c].length;k++) {
+                                cell[k]=document.createElement('td');
+                                if(Math.floor((c-1)/2)%2==0){
+                                    cell[k].style.backgroundColor="#99CCCC";
+                                }else{
+                                    cell[k].style.backgroundColor="white";                        
+                                }
+                                cont=document.createTextNode(Q[c][k]);
+                                cell[k].appendChild(cont);
+                                row[c+1].appendChild(cell[k]);
+                            }
+                            
+                            tbo.appendChild(row[c+1]);
+                        }
+                        
+                        tab.appendChild(tbo);
+                        
+                        
+                        newDiv.appendChild(tab);
+                        
+                      var my_div = document.getElementById("canvas");
+
+                      document.body.insertBefore(newDiv, my_div);
+        //return (reqdVal/sumVals);
+}

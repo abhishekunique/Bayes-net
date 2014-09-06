@@ -1,0 +1,135 @@
+<html>
+<head>
+    <script type="text/javascript" src="../js/raphael-min.js"></script>
+    <script type="text/javascript" src="../js/dracula_graffle.js"></script>
+    <script type="text/javascript" src="../js/jquery-1.4.2.min.js"></script>
+     <script type="text/javascript">
+     var modeClick=0;
+     var thisGraph;
+     </script>
+    <script type="text/javascript" src="../js/backup_dracula_graph.js"></script>
+    <script type="text/javascript" src="example.js"></script>
+
+<script language="JavaScript">
+function setVisibility(id) {
+if(document.getElementById('bt1').value=='Hide Layer'){
+document.getElementById('bt1').value = 'Show Layer';
+document.getElementById(id).style.display = 'none';
+}else{
+document.getElementById('bt1').value = 'Hide Layer';
+document.getElementById(id).style.display = 'inline';
+}
+}
+
+</script>
+
+
+<script language="JavaScript">
+function setVisibility2(id) {
+if(document.getElementById('dSeparationNodes').value=='Hide Layer'){
+document.getElementById('dSeparationNodes').value = 'Show Layer';
+document.getElementById(id).style.display = 'none';
+}else{
+document.getElementById('dSeparationNodes').value = 'Hide Layer';
+document.getElementById(id).style.display = 'inline';
+}
+}
+
+</script>
+
+
+<script type="text/javascript">
+<!--
+function dSeparationAlert() {
+   alert("First, select nodes to d-separate. Then select nodes to observe.")
+}
+</script>
+
+    <style type="text/css">
+		div.canvas
+		{
+			position:relative;
+            width: 800px;
+            height: 600px; 
+            border-style:solid; 
+            border: 2px solid; 
+            
+			top:20px;
+			
+			z-index:1;
+		}	
+
+	</style>
+
+    <style type="text/css">
+#gettingStarted { 
+position: absolute;  
+top: 75px;
+left: 850px;
+padding: 5px; 
+
+}
+
+</style>
+
+<style type="text/css">
+#queriesInstruc {
+    position: absolute; 
+    top: 265px;
+    left: 850px;
+    padding: 5px;
+}
+    </style>
+
+</head>
+<body>
+
+
+
+<button id='bt1' value='Show Layer' onclick="setVisibility('gettingStarted');";>Getting Started</button>
+
+<button id="createNode" onclick="createNode();">New Node</button>
+<button id="createEdge" onclick="createEdge();">New Edge</button>
+<button id="showTable" onclick="showTable();">Show Tables</button>
+<button id="cleanUp" onclick="redraw();">Clean Up</button>
+
+<button id="selectTool" onclick="selectTool();">Select</button>
+
+<br>
+<button id="dSeparationNodes" onclick="checkDS(); dSeparationAlert(); setVisibility2('queriesInstruc');";>Select D-Separation Nodes</button>
+<button id="dSeparationCheck" onclick="pathGenerator()">Check D-Separation</button>
+<button id="observe" onclick="observe()">Observe</button>
+<button id="queryInference" onclick="queryInference()">Query Inference</button>
+<button id="inferenceByEnumeration" onclick="inferenceByEnumeration()">Final Query</button>
+<button id="clearCanvas" onclick="window.location.reload()">Clear Canvas</button>
+
+
+
+
+<div id="gettingStarted" style="display: none; width:250px;height:165px;border:1px solid #000;">
+
+<center><b>Creating Bayesian Net: </b></center>
+<ol><li><i>New Node</i> to create node.</li>
+    <li><i>Select</i> to apply changes to node attributes and position. 
+    <li><i>New Edge</i> to connect nodes.</li>
+    <li><i>Show Tables</i> to enter CPT of node.</li>
+    <li><i>Redraw</i> to clean up the canvas.</li> 
+
+</ol>
+</div>
+
+<div id = "queriesInstruc" style="display:none; width:250px; height:165px; border:1px solid #000;"> 
+<center><b>D-Separation:</b></center>
+
+<ol><li><i>Select D-Separation Nodes</i> to choose nodes to d-separate. (First node is source node. Second node is target node. All subsequent nodes are observed nodes.)</li>
+    <li><i>Check D-Separation</i>.</li>
+   
+</ul>
+</div>
+
+<div id="canvas" class="canvas"></div>
+
+
+
+</body>
+</html>

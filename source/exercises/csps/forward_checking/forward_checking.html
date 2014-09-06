@@ -1,0 +1,310 @@
+<html>
+	<link href="../../../stylesheets/bootstrap.css" rel="stylesheet">
+	<script type='text/javascript' src="../../../javascripts/lib/raphael.js"></script>
+	<script type='text/javascript' src="../../../javascripts/lib/jquery.js"></script>
+		
+	<div>
+		</br>
+		</br>
+		</br>
+		</br>
+		
+	<div>
+	
+	<table width="20%" align="center" padding="0px">
+		<tr>
+			<td>
+		<div class="row">
+			<div class="span6">
+				<div id="vis"></div>
+				<div style="display:inline; margin: 0% 0% 0% 7%;">
+				<button id="reset" onclick="reset()"  class="btn">Reset</button>
+
+
+				<button id="prevButton" onclick="prevButton()" class="btn">Prev</button>
+
+				<button id="pauser" onclick="pause()"  class="btn">Pause</button>	
+
+				<button id="nextButton" onclick="nextButton()" class="btn">Next</button>
+				
+
+				<button id="player" onclick="play()"  class="btn">Play</button>
+				
+				<button id="fasterButton"  class="btn">Faster</button>
+
+				</div>
+			</div>
+		</td>
+		<td>
+			<div class="span6">
+			</br>
+				<div style="color:blue;  font-size:20px;">Graph</div>
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<select id="radios" style="font-size:17px;">
+				  <option value="Graph1">Simple</option>
+				  <option value="Graph2">Complex</option>
+				</select>
+			</div>
+
+			<div class="span6">
+			</br>
+				<div style="color:blue;  font-size:20px;">Algorithm</div>
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<select id="solveTypes" style="font-size:17px;">
+				  <option value="naive">Naive Search</option>
+				  <option value="backTracking" selected="selected">Backtracking</option>
+				  
+				  <option value="minConflict">Iterative Improvement</option>
+				</select>
+			</div>
+
+			<div class="span6">
+			</br>
+				<div style="color:blue;  font-size:20px;" >Ordering</div>
+
+				<div id="orderer" class="radios" style="color: black;">
+    					&nbsp;&nbsp;&nbsp;&nbsp;
+				     <input type="radio" name="radio1" id="NoneThingorder" value="None" > None </br>
+				     	&nbsp;&nbsp;&nbsp;&nbsp;
+				     <input type="radio" name="radio1" value="MRV"> MRV </br>
+				     	&nbsp;&nbsp;&nbsp;&nbsp;
+				     <input type="radio" name="radio1" value="MRVLCV" checked> MRV with LCV </br>
+				     
+
+				</div>
+			</div>
+
+			<div class="span6">
+			</br>
+				<div style="color:blue;  font-size:20px;" >Filtering</div>
+				<div id="filterSelector" class="radios" style="color: black;">
+    					&nbsp;&nbsp;&nbsp;&nbsp;
+				     <input type="radio" name="radio2" id="NoneThingfilter" value="None" > None </br>
+				     	&nbsp;&nbsp;&nbsp;&nbsp;
+				     <input type="radio" name="radio2" value="FC" checked> Forward Checking </br>
+				     	&nbsp;&nbsp;&nbsp;&nbsp;
+				     <input type="radio" name="radio2" value="AC" > Arc Consistency</br>
+				     
+
+				</div>
+			</div>
+			
+			<div class="span6" style="display:inline;">
+				</br>
+				<div style="color:blue;  font-size:20px;" >Speed</div>
+				<div style="float:left;">
+					
+					<div style="font-size:17px;" >&nbsp;&nbsp;&nbsp;&nbsp; Speedup</div>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="text" id="speedup" value="1" style="width:40px">
+					x
+				</div>
+				<div>
+					<div style="font-size:17px;" >&nbsp;&nbsp;&nbsp;&nbsp; Frame Delay</div>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input type="text" id="playSpeed" value="700" style="width:40px">
+				</div>
+				
+			</div>
+		</div>
+	</div>
+</td>
+	<script type="text/javascript">
+		var typeGraph=0;
+		var visPaper;
+		var assigner;
+		var filter="FC";
+		var variableSelect="MRV";
+		var valueSelect="LCV";
+		var solveType="BT";
+		var filteringOn=true;
+	</script>
+	<script type='text/javascript' src="../../../javascripts/exercises/csps/forward_checking/forward_checking.js"></script>
+	<script type="text/javascript">
+	$('#fasterButton').bind('click',function(){
+		if(!pauseOn){
+			clearInterval(interval);
+			$("#speedup").val($("#speedup").val()*2);
+			play();
+		}
+	});
+	$('#playSpeed').bind('change',function(){
+		if(!pauseOn){
+			clearInterval(interval);
+			play();
+		}
+	});
+	function reset(){
+		visPaper.remove();
+		assigner();
+				$("#nextButton").show();
+				$("#player").attr("disabled", false);
+				$("#fasterButton").attr("disabled", false);
+				$("#pauser").attr("disabled", false);
+				$("#nextButton").attr("disabled", false);
+
+	}
+
+	
+	$('#radios').bind('change',changer);
+
+
+		function changer(){
+			if($('#radios').val()=="Graph1"){
+				typeGraph=0;
+				visPaper.remove();
+				assigner();
+				$("#nextButton").show();
+				$("#player").attr("disabled", false);
+				$("#fasterButton").attr("disabled", false);
+				$("#pauser").attr("disabled", false);
+				$("#nextButton").attr("disabled", false);
+			}else{
+				typeGraph=1;
+				visPaper.remove();
+				assigner();
+				$("#nextButton").show();
+				$("#player").attr("disabled", false);
+				$("#fasterButton").attr("disabled", false);
+				$("#pauser").attr("disabled", false);
+				$("#nextButton").attr("disabled", false);
+			}
+		};
+
+	$('input:radio[name=radio1]').bind('change',changerOrdering);
+
+
+			function changerOrdering(){
+				if($('input:radio[name=radio1]:checked').val()=="None"){
+					valueSelect="Normal";
+					variableSelect="Normal";
+					visPaper.remove();
+					assigner();
+					$("#nextButton").show();
+					$("#player").attr("disabled", false);
+					$("#fasterButton").attr("disabled", false);
+					$("#pauser").attr("disabled", false);
+					$("#nextButton").attr("disabled", false);
+				}else if ($('input:radio[name=radio1]:checked').val()=="MRV") {
+					valueSelect="Normal";
+					variableSelect="MRV";
+					visPaper.remove();
+					assigner();
+					$("#nextButton").show();
+					$("#player").attr("disabled", false);
+					$("#fasterButton").attr("disabled", false);
+					$("#pauser").attr("disabled", false);
+					$("#nextButton").attr("disabled", false);
+				}else{
+					valueSelect="LCV";
+					variableSelect="MRV";
+					visPaper.remove();
+					assigner();
+					$("#nextButton").show();
+					$("#player").attr("disabled", false);
+					$("#fasterButton").attr("disabled", false);
+					$("#pauser").attr("disabled", false);
+					$("#nextButton").attr("disabled", false);
+				}
+			};
+
+		$('input:radio[name=radio2]').bind('change',changerFiltering);
+
+
+			function changerFiltering(){
+				if($('input:radio[name=radio2]:checked').val()=="None"){
+					filteringOn=false;
+					visPaper.remove();
+					assigner();
+					$("#nextButton").show();
+					$("#player").attr("disabled", false);
+					$("#fasterButton").attr("disabled", false);
+					$("#pauser").attr("disabled", false);
+					$("#nextButton").attr("disabled", false);
+				}else if ($('input:radio[name=radio2]:checked').val()=="FC") {
+					filteringOn=true;
+					filter="FC";
+					visPaper.remove();
+					assigner();
+					$("#nextButton").show();
+					$("#player").attr("disabled", false);
+					$("#fasterButton").attr("disabled", false);
+					$("#pauser").attr("disabled", false);
+					$("#nextButton").attr("disabled", false);
+				}else{
+					filteringOn=true;
+					filter="AC";
+					visPaper.remove();
+					assigner();
+					$("#nextButton").show();
+					$("#player").attr("disabled", false);
+					$("#fasterButton").attr("disabled", false);
+					$("#pauser").attr("disabled", false);
+					$("#nextButton").attr("disabled", false);
+				}
+			};
+
+			function setCheckedValue(radioObj, newValue) {
+				if(!radioObj)
+					return;
+				var radioLength = radioObj.length;
+				if(radioLength == undefined) {
+					radioObj.checked = (radioObj.value == newValue.toString());
+					return;
+				}
+				for(var i = 0; i < radioLength; i++) {
+					radioObj[i].checked = false;
+					if(radioObj[i].value == newValue.toString()) {
+						radioObj[i].checked = true;
+					}
+				}
+			}
+	
+
+
+	$('#solveTypes').bind('change',changerSolver);
+		function changerSolver(){
+			
+			if($('#solveTypes').val()=="backTracking"){
+			
+				solveType="BT";
+				visPaper.remove();
+				assigner();
+				$("#nextButton").show();
+				$("#player").attr("disabled", false);
+				$("#fasterButton").attr("disabled", false);
+				$("#pauser").attr("disabled", false);
+				$("#nextButton").attr("disabled", false);
+			}else if($("#solveTypes").val()=="minConflict"){
+				
+				solveType="MC";
+				visPaper.remove();
+				assigner();
+				$("#nextButton").show();
+				$("#player").attr("disabled", false);
+				$("#fasterButton").attr("disabled", false);
+				$("#pauser").attr("disabled", false);
+				$("#nextButton").attr("disabled", false);
+				$("#NoneThingorder").attr("checked","checked");
+				valueSelect="Normal";
+				variableSelect="Normal";
+				$("#NoneThingfilter").attr("checked","checked");
+				filteringOn=false;
+			}else{
+				
+				solveType="naive";
+				visPaper.remove();
+				assigner();
+				$("#nextButton").show();
+				$("#player").attr("disabled", false);
+				$("#fasterButton").attr("disabled", false);
+				$("#pauser").attr("disabled", false);
+				$("#nextButton").attr("disabled", false);
+			}
+			
+
+		};
+
+
+	</script>
+</html>

@@ -1,0 +1,166 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Search Trees</title>
+        <link type="text/css" href="/stylesheets/search/pacman-demos.css" rel="stylesheet" />
+        <script src="/javascripts/lib/jquery-1.7.2.min.js" type="text/javascript"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/priority_queue.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/config.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/search.js"></script>  
+        <script type="application/javascript" src="/javascripts/exercises/search/pacman.js"></script>
+        <script language="JavaScript">
+            var config = new Config(20, 10, true);
+            
+            function mk_game(layout,canvas)
+                {
+                layout.width = layout[0].length;
+                layout.height = layout.length;
+                var game = new Game(layout);
+                game.config = config;
+                game.config.SHOW_INFO=0;
+                game.layout = layout;
+                game.canvas = canvas;
+                game.resize();
+                draw(canvas, game);
+                return game;
+                }
+            function setup()
+                {
+                var ret;
+                var canvas = document.getElementById("canvas1");
+                if (window.interval1)
+                    clearInterval(window.interval1);
+                    
+                layout =  ["%%%%%",
+                           "%...%",
+                           "%...%",
+                           "%1..%",
+                           "%%%%%"];
+                
+                var game = mk_game(layout,canvas);
+                $("#level0").append('<canvas id="arrows0" width="1000" height="100" class="arrowcanvas"></canvas>');
+                var arrowcanvas = document.getElementById("arrows0");
+                canvas_arrow(arrowcanvas,650,0,600,95);
+                canvas_arrow(arrowcanvas,650,0,700,95);
+                window.pacman_currgame = game;
+                var nextlvl = child_states(game);
+                var currlvl = new Array;
+                var j = 2;
+                for (k = 1; k < game.food_left; k++)
+                    {
+                    $("#search_tree").append('<div id="level'+k+'"></div>');
+                    currlvl = nextlvl.slice();
+                    nextlvl = [];
+                    $("#level"+k).append('<div id="states' + k + '" class="states"></div>');
+                    for (i = 0; i < currlvl.length; i++)
+                        {
+                        $("#states"+k).append('<canvas align="center" id="canvas' + j + '"></canvas>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+                        var newcanvas = document.getElementById("canvas"+j);
+                        var l = currlvl[i];
+                        //console.log("at "+i + k);
+                        //console.log(l);
+                        var ng = mk_game(l,newcanvas);
+                        var nchildren = child_states(ng);
+                        nextlvl.push.apply(nextlvl,nchildren);
+                        j++;
+                        }
+                    $("#level"+k).append('<canvas id="arrows' + j + '" class="arrowcanvas" width="1400px" height="100px"></canvas>');
+                    var arrowcanvas = document.getElementById("arrows"+j);
+                    switch (k)
+                        {
+                        case 1:
+                            canvas_arrow(arrowcanvas,570,0,450,90);
+                            canvas_arrow(arrowcanvas,570,0,580,90);
+                            
+                            canvas_arrow(arrowcanvas,700,0,700,90);
+                            canvas_arrow(arrowcanvas,700,0,800,90);
+                            break;
+                        case 2:
+                            canvas_arrow(arrowcanvas,430,0,180,90);
+                            
+                            canvas_arrow(arrowcanvas,570,0,300,90);
+                            canvas_arrow(arrowcanvas,570,0,450,90);
+                            canvas_arrow(arrowcanvas,570,0,570,90);
+                            
+                            canvas_arrow(arrowcanvas,700,0,700,90);
+                            canvas_arrow(arrowcanvas,700,0,820,90);
+                            canvas_arrow(arrowcanvas,700,0,950,90);
+                            
+                            canvas_arrow(arrowcanvas,840,0,1050,90);
+                            break;
+                        case 3:
+                            canvas_arrow(arrowcanvas,160,0,100,50);
+                            canvas_arrow(arrowcanvas,160,0,180,50);
+                            
+                            canvas_arrow(arrowcanvas,300,0,280,50);
+                            canvas_arrow(arrowcanvas,300,0,240,50);
+                            
+                            canvas_arrow(arrowcanvas,430,0,430,50);
+                            
+                            canvas_arrow(arrowcanvas,560,0,540,50);
+                            canvas_arrow(arrowcanvas,560,0,580,50);
+                            
+                            canvas_arrow(arrowcanvas,700,0,690,50);
+                            canvas_arrow(arrowcanvas,700,0,720,50);
+                            
+                            canvas_arrow(arrowcanvas,840,0,830,50);
+                            canvas_arrow(arrowcanvas,840,0,860,50);
+                            
+                            canvas_arrow(arrowcanvas,960,0,960,50);
+                            
+                            canvas_arrow(arrowcanvas,1100,0,1100,50);
+                            canvas_arrow(arrowcanvas,1100,0,1150,50);
+                            break;
+                        }
+                    }
+                
+                $("#selectbox").append('<select id="tree_depth" onchange="refresh_tree()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected="selected">4</option></select>');
+                refresh_tree();
+                }
+            function refresh_tree()
+                {
+                var show_level = $("#tree_depth").val();
+                for (i = 0; i < show_level; i++)
+                    $('#level'+i).show();
+                    
+                for (i = show_level; i < 9; i++)
+                    $('#level'+i).hide();   
+                }
+            function pacman_reset(game)
+                {
+                clearInterval(window.interval1);
+                draw(game.canvas,game);
+                }
+            function run(game)
+                {
+                ret = tree_search(game);
+                game.actions = ret[0];
+                game.nNodes = ret[1];
+                var play = new Object();
+                play.actions = game.actions;
+                play.length = play.actions.length;
+                play.game = game;
+                play.canvas = game.canvas;
+                play.i = 0;
+                play.interval_id = null;
+                play.step_single = m_single;
+                play.step = m_step;
+                window.pacman_play=play;
+                window.interval1 = setInterval(play.step, rules.TURN_DELAY);
+                }
+        </script>
+          
+    </head>
+ <body onload="setup();">
+        <h1 align="center">Search Trees</h1>
+        <p align="center">Showing the incremental growth of the search tree in a simple Pacman maze.</p>
+        <div id="selectbox" align="center">
+         Search tree depth: 
+        </div>
+        <div id="search_tree">
+            <div id="level0">
+            <div class="states"><canvas id="canvas1" width="300" height="100" align="center"></canvas></div>
+            </div>
+        </div>
+        </body>
+</html>

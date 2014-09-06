@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Search Tree</title>
+        <link type="text/css" href="/stylesheets/search/smoothness/jquery-ui-1.8.21.custom.css" rel="stylesheet" />
+        <link type="text/css" href="/stylesheets/search/jquery.cluetip.css" rel="stylesheet" />
+        <link type="text/css" href="/stylesheets/search/search.css" rel="stylesheet" />
+        <script src="/javascripts/lib/raphael.js" type="text/javascript" charset="utf-8"></script>
+        <script src="/javascripts/lib/jquery-1.7.2.min.js" type="text/javascript"></script>
+		<script type="text/javascript" src="/javascripts/lib/jquery-ui-1.8.21.custom.min.js"></script>
+        <script src="/javascripts/lib/jquery.cluetip.min.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/raphael-utils.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/priority_queue.js" type="text/javascript"></script>
+        <script src="/javascripts/exercises/search/utils.js" type="text/javascript"></script>
+
+        <script language="JavaScript">
+	    var anspath_coord_x = 420;
+	    var anspath_coord_y= 20;
+	    var curr_cons_x = 230;
+	    var curr_cons_y = 410;
+	    var arrow_size=10;
+	    var node_width=130;
+	    var node_height=50;
+	    var green = "#01df01";
+	    var orange= "#ff9000";
+	    var white = "#fff";
+	    var black = "#000";
+	    var gray = "#E6E6E6";
+	    function setup()
+		{
+		var graph_conf = { "nodes": ["S","A","B","C","D","G"],
+			   "heuristic": {"S":4,"A":3,"B":6,"C":1,"D":2,"G":0},
+			   "edges": ["SA","SB","AD","DB","DC","CG","BC"],
+			   "costs": [1,1,1,1,1,1,5],
+			   "alg" : []
+			};
+		var pq_search = new search_problem();
+		pq_search.graph_conf = graph_conf;
+		var r = Raphael("holder", pq_search.paper_width, pq_search.paper_height);
+		var nodes = r.set();
+		var labels = r.set();
+     
+		// draw graph
+		pq_search.draw_graph(r,nodes,labels);
+		window.r_holder = r;
+        window.pq_search = pq_search;
+		}
+        function show_search_tree()
+            {
+            if (!window.tree_shown)
+                {
+                draw_node(window.r_holder,"S",window.pq_search);
+                window.tree_shown = 1;
+                }
+            }
+        function draw_node(r, node, problem)
+            {
+            var depth = node.length;
+            if (depth==1)
+                problem.draw_tree_node(r,node, 1 ,depth);
+            var nnodes = new Array;
+            nnodes = next_nodes(node, problem);
+            for (var i = 0; i < nnodes.length; i++)
+                {
+                var simplePath = new String(nnodes[i]);
+                simplePath = simplePath.replace('-','');
+                depth = simplePath.length;
+                
+                console.log(problem,depth, simplePath);
+                problem.draw_tree_node(r,nnodes[i], 0 ,depth);
+                draw_node(r,nnodes[i],problem);
+                }
+            }
+	    function next_nodes(node,problem)
+            {
+            var nodes = new Array;
+            var state = node.charAt(node.length-1);
+            console.log(node);
+            for (i = 0; i < problem.graph_conf.edges.length;i++)
+                {
+                if (problem.graph_conf.edges[i][0] == state)
+                nodes.push(node+'-'+problem.graph_conf.edges[i][1]);
+                }
+            return nodes;
+            }
+	    
+	</script>
+    </head>
+    <body onload="setup();">
+        <h1>Search tree for a simple state space</h1>
+		<p>Shows the complete search tree for this search problem.</p>
+        <div>
+            <div id="holder"></div><button id="show_tree" onclick="show_search_tree()">Show search tree</button>
+        </div>
+    </body>
+</html>

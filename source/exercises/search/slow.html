@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Guess the Search Method</title>
+        <link type="text/css" href="/stylesheets/search/smoothness/jquery-ui-1.8.21.custom.css" rel="stylesheet" />
+        <link type="text/css" href="/stylesheets/search/pacman.css" rel="stylesheet" />
+        <script src="/javascripts/lib/jquery-1.7.2.min.js" type="text/javascript"></script>
+        <script type="text/javascript" src="/javascripts/lib/jquery-ui-1.8.21.custom.min.js"></script>       
+        <script type="application/javascript" src="/javascripts/exercises/search/priority_queue.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/config.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/search.js"></script>  
+        <script type="application/javascript" src="/javascripts/exercises/search/pacman.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/random-mazes.js"></script>
+        <script language="JavaScript">
+            var config = new Config(30, 10, false);
+            window.interval1 = new Array;
+            var algs=["DFS","BFS","UCS","Greedy","A*"];
+            var randomchoice;
+            var algchoice;
+            var rst_layout = "";
+            var used_alg = null;
+            function setup(game_id)
+                {
+                $("#run1").removeAttr("disabled");
+                $("#status_bar1").html("");
+                jQuery("#start_moving").hide();
+                var ret;
+                
+                for (var i = 0; i < window.interval1.length; i++)
+                    clearInterval(window.interval1[i]);
+                if (!game_id)
+                    {
+                    //randomchoice=Math.floor(Math.random()*pacman_mazes.length);
+                    randomchoice=0;
+                    //algchoice = Math.floor(Math.random()*algs.length);
+                    algchoice = 2;
+                    }
+                if (!game_id || game_id == 1)
+                    {
+                    var canvas = document.getElementById("canvas1");
+                    if (!rst_layout)
+                        {
+                        layout = pacman_mazes[randomchoice];
+                        rst_layout = layout.slice();
+                        }
+                    else 
+                        {
+                        layout = rst_layout.slice();
+                        }
+                    //console.log(rst_layout);
+                    layout.width = layout[0].length;
+                    layout.height = layout.length;
+                    var game1 = new Game(layout);
+                    game1.overlay_visited=1;
+                    game1.slow_squares = 1;
+                    game1.delay_start=1;
+                    game1.status_bar="#status_bar1";
+                    game1.alg=algs[algchoice];
+                    console.log(game1.alg);
+                    used_alg = game1.alg;
+                    game1.config = config;
+                    game1.layout = layout;
+                    game1.canvas = canvas;
+                    game1.resize();
+                    draw(canvas, game1);
+                    window.pacman_currgame = game1;
+                    if (game_id)
+                        return game1;
+                    }
+                
+                
+                }
+            function pacman_reset(game)
+                {
+                for (var i = 0; i < window.interval1.length; i++)
+                    clearInterval(window.interval1[i]);
+                draw(game.canvas,game);
+                }
+            function run(game,game_id)
+                {
+                game = setup(game_id);
+                ret = tree_search(game);
+               
+                if (game_id==1)
+                    {
+                    $("#run1").attr("disabled", "disabled");
+                    $("#reset1").attr("disabled", "disabled");
+                    }
+                }
+            function start_moving()
+                {
+                window.interval1[window.interval1.length] = setInterval(window.pacman_play.step, rules.TURN_DELAY);
+                jQuery("#start_moving").hide();
+                }
+            function verify_answer()
+                {
+                var _answers = [];
+                var correct = 0;
+                var _tmpans = used_alg;
+                jQuery('.ansbox').each(function(idx)
+                    {
+                    if (this.checked)
+                        _answers.push(algs[idx]);
+                    }
+                                       );
+                if (!_answers.length)
+                    {
+                    jQuery("#answer_area").html("Please select at least one possible answer.");
+                    return 0;
+                    }
+                /*if (used_alg=="BFS" || used_alg=="UCS")
+                    {
+                    _tmpans= "BFS, UCS";
+                    correct = 1;
+                    for (var i = 0; i < _answers.length; i++)
+                        {
+                        if (_answers[i] == "DFS"
+                            || _answers[i] == "Greedy"
+                            || _answers[i] == "A*")
+                            correct = 0;
+                        }
+                    }*/
+               
+                    
+                    if (find_answer(_answers,used_alg))
+                        correct = 1;
+                    for (var i = 0; i < _answers.length; i++)
+                        if (_answers[i] != used_alg)
+                            correct = 0;
+                    
+                jQuery("answer_area").css("border-style", "solid");
+                jQuery("answer_area").css("border-color", "black");
+                if (correct)
+                    {
+                    jQuery("#answer_area").css("color", "green");
+                    jQuery("#answer_area").html("Correct answer!");
+                    }
+                else
+                    {
+                    jQuery("#answer_area").css("color", "red");
+                    jQuery("#answer_area").html("Incorrect answer. Correct algorithm(s): "+ _tmpans);
+                    }
+                    
+                return 0;
+                }
+            function find_answer(answers, answer)
+                {
+                for (var i = 0; i< answers.length;i++)
+                    if (answers[i] == answer)
+                        return 1;
+                return 0;
+                };
+        </script>
+          
+    </head>
+ <body onload="setup(0);">
+        <h2>Try to guess which algorithm did Pacman use to eat all the food.</h2>
+        <canvas id="canvas1" width="300" height="300"></canvas>
+        <div class="status_bar" id="status_bar1"></div>
+        <button id="run1" onclick="run(window.pacman_currgame,1)">Run</button> &nbsp;<button id="reset1" onclick="setup(1)">Reset</button>
+        <button id="start_moving" onClick="start_moving()">Start Moving</button>
+        <br><br>
+        <div id="answers">
+            Mark your choice below and click "Verify" to verify your answer. Note that there could be more than 1 correct answer.
+            <form method="post">
+                <input class="ansbox" type="checkbox" id="ans_0" value="1"><label for="ans_0">DFS</label>
+                <input class="ansbox" type="checkbox" id="ans_1" value="1"><label for="ans_0">BFS</label>
+                <input class="ansbox" type="checkbox" id="ans_2" value="1"><label for="ans_0">UCS</label>
+                <input class="ansbox" type="checkbox" id="ans_3" value="1"><label for="ans_0">Greedy</label>
+                <input class="ansbox" type="checkbox" id="ans_4" value="1"><label for="ans_0">A*</label><br>
+                <button id="verify" onClick="verify_answer()" type="button">Verify</button>
+                <div id="answer_area"></div>
+            </form>
+        </div>
+ </body>
+</html>

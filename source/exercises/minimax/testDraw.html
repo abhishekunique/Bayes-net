@@ -1,0 +1,152 @@
+
+<!doctype html>
+<html>
+<head>
+      <script type="text/javascript" src="/javascripts/lib/raphael.js"></script>  
+        <script type="text/javascript" src="/javascripts/lib/jquery.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/priority_queue.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/config.js"></script>
+        <script type="application/javascript" src="/javascripts/exercises/search/search.js"></script>  
+        <script type="application/javascript" src="/javascripts/exercises/search/pacman.js"></script>
+    <meta charset="utf-8" />
+    
+    <style>
+        a { color: #0068D2; cursor: pointer; }
+        a:link, a:visited { text-decoration: none; color: #0068D2; }
+        a:hover, a:active { text-decoration: underline; color: #0068D2; }
+        body { font: 12px/18px "Lucida Grande", "Lucida Sans Unicode", sans-serif; }
+
+        #contacts-table { border-collapse: collapse;  }
+        #contacts-table, #contacts-table th, #contacts-table td { padding: 8px 16px; text-align: left; border: 0px solid #B9BABE; }
+        #contacts-table th { font-weight: bold; font-size: 14px; color: #29344B; }
+        #contacts-table td { color: #000; }
+        #contacts-table tr:nth-child(2n) { background: #E8EDFF; }
+        
+        .button input { padding: 4px 8px; color: #343434; background-color: #fdfdfd; background: -moz-linear-gradient(#fdfdfd, #e1e1e1); background: -webkit-gradient(linear, 0 0, 0 100%, from(#fdfdfd), to(#e1e1e1)); }
+        .button-default input { font-weight: bold; color: #fff; background-color: #7ca0c7; background: -moz-linear-gradient(#acc6e1, #7ca0c7); background: -webkit-gradient(linear, 0 0, 0 100%, from(#acc6e1), to(#7ca0c7)); border-color: #5b80b2; }
+        p.Depth
+        {
+            position:relative;  
+            left:100px;
+        }
+
+        div.scroll {
+            position:relative;
+            top: 100px;
+        height: 400px;
+        width: 170px;
+         float:left;
+        overflow: scroll;
+        border: 1px solid #666;
+        padding: 0px;
+        }
+
+    </style>
+</head>
+<body>
+    
+        <div  id="canvas_container" style="margin-left: 200px;"> </div>
+    
+    <script>
+    
+window.onload=function(){   
+    config = new Config(30, 10, false);
+            function setup(rows,cols,xPosFood,yPosFood,xPosWalls, yPosWalls,pPosx,pPosy,gPosx,gPosy,boardx,boardy,cellSize,addtoDiv,canvasid)
+                {
+                    console.log(config);
+                    config.CELL_SIZE=cellSize;  
+                    config.WALL_SIZE = cellSize/3;
+                    config.CAPSULE_SIZE = cellSize*0.25;
+                    config.FOOD_SIZE = cellSize*0.10;
+                    config.OFFSET = (cellSize - cellSize/3)/2;
+                    config.RADIUS = cellSize/6;
+                    config.PANE_SIZE = cellSize*1.5;
+                var canvas = document.createElement("canvas");
+                    canvas.id=canvasid;
+                    canvas.style.position='absolute';
+                    canvas.style.top=boardy+"px";
+                    canvas.style.left=boardx+"px";
+                    canvas.style.zIndex="50";
+                var ret;
+                //var canvas = document.getElementById("canvas1");
+              
+                var layout3=[];
+                var row1=[];
+                for(var j=0;j<cols+2;j++){
+                        row1.push("%");
+                }
+                layout3.push(row1);
+                for(var i=0;i<rows;i++){
+                    var temp=[];
+                    temp.push('%');
+                    for(var j=0;j<cols;j++){
+                        temp.push(" ");
+                    }
+                    temp.push("%");
+                    layout3.push(temp);
+                }
+                for(var i=0;i<xPosFood.length;i++){
+                    layout3[yPosFood[i]+1][xPosFood[i]+1]=".";         
+                }
+                for(var i=0;i<xPosWalls.length;i++){
+                    layout3[yPosWalls[i]+1][xPosWalls[i]+1]="%";         
+                }
+                for(var i=0;i<pPosx.length;i++){
+                    layout3[pPosy[i]+1][pPosx[i]+1]="1";         
+                }
+                for(var i=0;i<gPosx.length;i++){
+                    layout3[gPosy[i]+1][gPosx[i]+1]=(2+i).toString();         
+                }
+                var row1=[];
+                for(var j=0;j<cols+2;j++){
+                        row1.push("%");
+                }
+                layout3.push(row1);
+                for(var i=0;i<layout3.length;i++){
+                    layout3[i].join('');         
+                }
+                console.log(layout3);
+                layout = layout3;
+                layout.width = layout[0].length;
+                layout.height = layout.length;
+                var game = new Game(layout);
+                game.config = config;
+                game.layout = layout;
+                game.canvas = canvas;
+                game.resize();
+                draw(canvas, game);
+                var my_div = document.getElementById(addtoDiv);
+                console.log(addtoDiv);
+                my_div.insertBefore(canvas);
+                return canvas;
+            }
+        
+        
+            // order is as follows
+            //number of rows
+            //number of columns
+            //x positions of food
+            //y positions of food
+            // x positions of wall
+            //y positions of wall
+            //x positions of pacman
+            //y positions of pacman
+            //x positions of ghost
+            //y positions of ghost
+            // absolute position x of board
+            //absolute position y of board
+            //size of each cell
+            // div to add it to( dont change this)
+            //canvas id( dont change this)
+
+            setup(5,5,[0,1],[2,3],[1,1],[2,2],[0,0],[4,4],[],[],700,100, 40, "canvas_container", "board1");
+
+
+    
+};
+        
+    </script>
+    
+    
+</body>
+</html>

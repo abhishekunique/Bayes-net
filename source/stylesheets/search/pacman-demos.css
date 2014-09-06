@@ -1,0 +1,27 @@
+body {
+    width:1000px;
+    height:3000px;
+}
+.arrowcanvas {
+    position: relative;
+    left: 0px;
+    top: 80px;
+    }
+#search_tree {
+    position: absolute;
+    left: 0px;
+    top:100px;
+    width: 1400px;
+    height: 3000px;
+}
+
+
+.states {
+    position: relative;
+    text-align: center;
+    top: 75px;
+    height: 100px;
+    width: 1300px;
+}
+
+

@@ -1,0 +1,39 @@
+<html>
+<head>
+    <script type="text/javascript" src="../js/raphael-min.js"></script>
+    <script type="text/javascript" src="../js/dracula_graffle.js"></script>
+    <script type="text/javascript" src="../js/jquery-1.4.2.min.js"></script>
+     <script type="text/javascript">
+     var modeClick=0;
+     var thisGraph;
+     </script>
+    <script type="text/javascript" src="../js/backup_dracula_graph.js"></script>
+    <script type="text/javascript" src="example.js"></script>
+    <style type="text/css">
+		div.canvas
+		{
+			position:relative;
+			top:0px;
+			right:0px;
+			z-index:1;
+		}		
+
+	</style>
+
+
+</head>
+<body>
+<div id="canvas" class="canvas"></div>
+<button id="redraw" onclick="redraw();">redraw</button>
+<button id="createNode" onclick="createNode();">New Node</button>
+<button id="createEdge" onclick="createEdge();">New Edge</button>
+<button id="showTable" onclick="showTable();">Show Tables</button>
+<button id="selectTool" onclick="selectTool();">Select</button>
+<button id="dSeparationNodes" onclick="checkDS();">Select D-Separation Nodes</button>
+<button id="dSeparationCheck" onclick="pathGenerator()">Check D-separation</button>
+<button id="observe" onclick="observe()">Observe</button>
+<button id="queryInference" onclick="queryInference()">Query Inference</button>
+<button id="inferenceByEnumeration" onclick="inferenceByEnumeration()">Final Query</button>
+
+</body>
+</html>

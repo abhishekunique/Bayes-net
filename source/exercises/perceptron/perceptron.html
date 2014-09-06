@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style type="text/css">
+			h1 {
+				color: blue;
+				text-align: center;
+			}
+			p {
+				font-family: "Times New Roman";
+				font-size: 20px;
+			}
+			fieldset {
+				border: 3px solid blue;
+				padding: 50px;
+			}
+			table.special {
+				border-color: orange;
+				border-width: 5px;
+				width: 400;
+			}
+			th.special {
+				border: solid blue 2px;
+			}
+			td.special {
+				border: solid orange 1px;
+			}
+			tspan.one {
+				color: blue;
+			}
+			p.one {
+				border-style: solid;
+				border-width: medium;
+				border-color: orange;
+				padding: 0;
+				margin: 0;
+			}
+			ul {
+				list-style-type: none;
+				font-family: "Times New Roman";
+				font-size: 18px;
+			}
+			li {
+				background: white;
+			}
+			.classname {
+				-moz-box-shadow: inset 0px 1px 0px 0px #ffffff;
+				-webkit-box-shadow: inset 0px 1px 0px 0px #ffffff;
+				box-shadow: inset 0px 1px 0px 0px #ffffff;
+				background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+				background: -moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+				filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+				background-color: #ededed;
+				-moz-border-radius: 6px;
+				-webkit-border-radius: 6px;
+				border-radius: 6px;
+				border: 1px solid #dcdcdc;
+				display: inline-block;
+				color: #524c52;
+				font-family: arial;
+				font-size: 15px;
+				font-weight: bold;
+				padding: 6px 24px;
+				text-decoration: none;
+				text-shadow: 0px 0px 50px #ffffff;
+			}
+			.classname:hover {
+				background: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
+				background: -moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
+				filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dfdfdf', endColorstr='#ededed');
+				background-color: #dfdfdf;
+			}
+			.classname:active {
+				position: relative;
+				top: 1px;
+			}
+			.innerb {
+				height: 10em;
+				overflow: auto;
+			}
+
+		</style>
+		<script type="text/javascript">
+			var real_weights = new Array(6);
+			var show_weights = new Array(6);
+
+			var max_table_size = 25;
+			var table_Array = new Array(max_table_size);
+			var table_Index = max_table_size - 1;
+
+			var choose = new Array(3);
+			var testData = new Array(2);
+			var testLabel = "";
+			var compLabel = "";
+			var lineNumber = 1;
+			var forLoop = 0;
+			var circle = new Array(max_table_size);
+			var row = new Array(max_table_size);
+			var svgNS = "http://www.w3.org/2000/svg";
+			var height_const = 400;
+			var width_const = 400;
+
+			var w_A;
+			var w_B;
+			var w_C;
+			var w_T;
+
+			var boundA_B = new Array(2);
+			var boundA_C = new Array(2);
+			var boundB_C = new Array(2);
+
+			var boundA_BO = new Array(2);
+			var boundA_CO = new Array(2);
+			var boundB_CO = new Array(2);
+			var vecAC;
+			var vecAB;
+			var vecBC;
+			var vecACO;
+			var vecABO;
+			var vecBCO;
+
+			var paths = new Array(10);
+
+			var crossC = new Array(2);
+			var crossA = new Array(2);
+			var crossB = new Array(2);
+			var crossT = new Array(2);
+			var clear;
+
+			var unit = 5;
+
+			var listArray = new Array(6);
+			var x = 0;
+			for (x; x < 6; x++) {
+				listArray[x] = 0;
+			}
+
+			var checkClear = false;
+			window.onload = function() {
+
+				real_weights[0] = 0;
+				real_weights[1] = 1;
+
+				real_weights[2] = 1;
+				real_weights[3] = 0;
+
+				real_weights[4] = -1 / Math.sqrt(2);
+				real_weights[5] = -1 / Math.sqrt(2);
+
+				show_weights[0] = (Math.random() * 10) - 5;
+				show_weights[1] = (Math.random() * 10) - 5;
+
+				show_weights[2] = (Math.random() * 10) - 5;
+				show_weights[3] = (Math.random() * 10) - 5;
+
+				show_weights[4] = (Math.random() * 10) - 5;
+				show_weights[5] = (Math.random() * 10) - 5;
+
+				//normalize(show_weights);
+				var i = 0;
+				for (i; i < 2; i++) {
+					var tempVec = new Array(2);
+					tempVec[0] = show_weights[i * 2];
+					tempVec[1] = show_weights[i * 2 + 1];
+
+					if (mag(tempVec) == 0) {
+						while (true) {
+							tempVec[0] = (Math.random() * 10) - 5;
+							tempVec[1] = (Math.random() * 10) - 5;
+
+							if (mag(tempVec) != 0) {
+
+								break;
+							}
+						}
+
+					}
+					show_weights[i * 2] = tempVec[0];
+					show_weights[i * 2 + 1] = tempVec[1];
+				}
+
+				redraw();
+				initTable();
+				displayWeight();
+				determineBound();
+
+				nextTrainingData();
+
+				document.getElementById("background_" + lineNumber).style.background = "orange";
+
+			}
+			function zoomOut() {
+				unit = unit * 1.25;
+				redrawCanvas();
+			}
+
+			function zoomIn() {
+				unit = unit * 0.75;
+				redrawCanvas();
+			}
+
+			function zoomReset() {
+				unit = 5;
+				redrawCanvas();
+			}
+
+			function redrawCanvas() {
+
+				while (document.getElementById("display").lastChild) {
+					document.getElementById("display").removeChild(document.getElementById("display").lastChild);
+				}
+
+				redraw();
+
+				tableRedraw();
+
+				w_T = document.createElementNS(svgNS, "line");
+				var offsetY = ((height_const) / (unit * 2)) * (-1 * testData[1] + unit);
+				var offsetX = ((width_const) / (unit * 2)) * (testData[0] + unit);
+
+				w_T.setAttributeNS(null, "stroke", "orange");
+				w_T.setAttributeNS(null, "x1", (width_const) / 2);
+				w_T.setAttributeNS(null, "y1", (height_const) / 2);
+				w_T.setAttributeNS(null, "stroke-width", 4);
+				w_T.setAttributeNS(null, "x2", offsetX);
+				w_T.setAttributeNS(null, "y2", offsetY);
+
+				document.getElementById("display").appendChild(w_T);
+
+				displayCross(w_T, crossT, "orange", false);
+
+				redrawWeight();
+				redrawBound();
+			}
+
+			function redrawWeight() {
+				w_A = document.createElementNS(svgNS, "line");
+				var offsetY = ((height_const) / (unit * 2)) * (-1 * show_weights[1] + unit);
+				var offsetX = ((width_const) / (unit * 2)) * (show_weights[0] + unit);
+
+				w_A.setAttributeNS(null, "stroke", "blue");
+				w_A.setAttributeNS(null, "x1", (width_const) / 2);
+				w_A.setAttributeNS(null, "y1", (height_const) / 2);
+				w_A.setAttributeNS(null, "stroke-width", 4);
+				w_A.setAttributeNS(null, "x2", offsetX);
+				w_A.setAttributeNS(null, "y2", offsetY);
+				document.getElementById("display").appendChild(w_A);
+
+				w_B = document.createElementNS(svgNS, "line");
+				offsetY = ((height_const) / (unit * 2)) * (-1 * show_weights[3] + unit);
+				offsetX = ((width_const) / (unit * 2)) * (show_weights[2] + unit);
+
+				w_B.setAttributeNS(null, "stroke", "red");
+				w_B.setAttributeNS(null, "x1", (width_const) / 2);
+				w_B.setAttributeNS(null, "y1", (height_const) / 2);
+				w_B.setAttributeNS(null, "stroke-width", 4);
+				w_B.setAttributeNS(null, "x2", offsetX);
+				w_B.setAttributeNS(null, "y2", offsetY);
+
+				document.getElementById("display").appendChild(w_B);
+
+				w_C = document.createElementNS(svgNS, "line");
+				offsetY = ((height_const) / (unit * 2)) * (-1 * show_weights[5] + unit);
+				offsetX = ((width_const) / (unit * 2)) * (show_weights[4] + unit);
+
+				w_C.setAttributeNS(null, "stroke", "green");
+				w_C.setAttributeNS(null, "x1", (width_const) / 2);
+				w_C.setAttributeNS(null, "y1", (height_const) / 2);
+				w_C.setAttributeNS(null, "stroke-width", 4);
+				w_C.setAttributeNS(null, "x2", offsetX);
+				w_C.setAttributeNS(null, "y2", offsetY);
+
+				document.getElementById("display").appendChild(w_C);
+
+				//determineBound();
+				//if(crossC != null){
+				//document.getElementById("display").removeChild(crossC);
+				//document.getElementById("display").removeChild(crossA);
+				//document.getElementById("display").removeChild(crossB);
+				//}
+
+				displayCross(w_C, crossC, "green", false);
+				displayCross(w_A, crossA, "blue", false);
+				displayCross(w_B, crossB, "red", false);
+
+			}
+
+			function tableRedraw() {
+				var i = 0;
+				for (i; i < max_table_size; i++) {
+					var temp = new Array(2);
+					temp = table_Array[i];
+					var temp_label = "";
+
+					temp_label = dotproductMax(temp[0], temp[1], real_weights);
+
+					circle[i] = document.createElementNS(svgNS, "circle");
+
+					var offsetY = ((height_const) / (unit * 2)) * (-1 * temp[1] + unit);
+					var offsetX = ((width_const) / (unit * 2)) * (temp[0] + unit);
+
+					circle[i].setAttributeNS(null, "cx", offsetX);
+					circle[i].setAttributeNS(null, "cy", offsetY);
+					circle[i].setAttributeNS(null, "r", 4);
+
+					if (temp_label == 0) {
+						circle[i].setAttributeNS(null, "fill", "blue");
+						temp_label = "A";
+					}
+					if (temp_label == 1) {
+						circle[i].setAttributeNS(null, "fill", "red");
+						temp_label = "B";
+					}
+					if (temp_label == 2) {
+						circle[i].setAttributeNS(null, "fill", "green");
+						temp_label = "C";
+					}
+					circle[i].addEventListener("click", clickCirc, false);
+					circle[i].addEventListener("mouseover", highLight, false);
+					circle[i].addEventListener("mouseout", nothighLight, false);
+					document.getElementById("display").appendChild(circle[i]);
+
+				}
+
+			}
+
+			function nextTrainingData() {
+				var i = 0;
+				var temp = table_Array[table_Index];
+				for (i; i < 2; i++) {
+					testData[i] = temp[i];
+
+				}
+				var temp_color;
+				testLabel = temp[2];
+				if (testLabel == 0) {
+					testLabel = "A";
+					temp_color = "blue";
+				}
+				if (testLabel == 1) {
+					testLabel = "B";
+					temp_color = "red";
+				}
+				if (testLabel == 2) {
+					testLabel = "C";
+					temp_color = "green";
+				}
+
+				var round1 = Math.floor(testData[0] * 100) / 100;
+				var round2 = Math.floor(testData[1] * 100) / 100;
+				document.getElementById("train_data").innerHTML = "train data = (" + round1 + ", " + round2 + ")";
+				document.getElementById("train_data").style.color = "orange";
+
+				document.getElementById("train_label").innerHTML = "train label = " + testLabel;
+				document.getElementById("train_label").style.color = temp_color;
+
+				if (table_Index != max_table_size - 1) {
+					row[table_Index].style.background = "orange";
+					row[table_Index + 1].style.background = "white";
+
+				} else {
+					row[table_Index].style.background = "orange";
+
+					row[0].style.background = "white";
+
+				}
+				choose[0] = 0;
+				choose[1] = 0;
+				choose[2] = 0;
+				compLabel = "";
+				displayChoose();
+
+				if (w_T != null) {
+					w_T.parentNode.removeChild(w_T);
+
+				}
+
+				w_T = document.createElementNS(svgNS, "line");
+				var offsetY = ((height_const) / (unit * 2)) * (-1 * testData[1] + unit);
+				var offsetX = ((width_const) / (unit * 2)) * (testData[0] + unit);
+
+				w_T.setAttributeNS(null, "stroke", "orange");
+				w_T.setAttributeNS(null, "x1", (width_const) / 2);
+				w_T.setAttributeNS(null, "y1", (height_const) / 2);
+				w_T.setAttributeNS(null, "stroke-width", 4);
+				w_T.setAttributeNS(null, "x2", offsetX);
+				w_T.setAttributeNS(null, "y2", offsetY);
+
+				document.getElementById("display").appendChild(w_T);
+				//if(crossT != null){
+				//	crossT.parentNode.removeChild(crossT);
+				//}
+
+				displayCross(w_T, crossT, "orange", true);
+			}
+
+			function displayChoose() {
+				var round1 = Math.floor(choose[0] * 100) / 100;
+				var round2 = Math.floor(choose[1] * 100) / 100;
+				var round3 = Math.floor(choose[2] * 100) / 100;
+
+				document.getElementById("cho").innerHTML = "data*weight = [" + round1 + ", " + round2 + ", " + round3 + "]" + "<br />" + "compLabel = " + compLabel;
+			}
+
+			function initTable() {
+
+				if (row[0] != null) {
+					var x = 0;
+					for (x; x < max_table_size; x++) {
+						var table = document.getElementById("tabletwo");
+						table.deleteRow(0);
+
+					}
+
+				}
+
+				var i = 0;
+				for (i; i < max_table_size; i++) {
+					var temp = new Array(3);
+					var temp_label = "";
+					temp[0] = (Math.random() * 10) - 5;
+					temp[1] = (Math.random() * 10) - 5;
+
+					temp[2] = dotproductMax(temp[0], temp[1], real_weights);
+
+					table_Array[i] = temp;
+
+					if (circle[i] != null) {
+
+						circle[i].parentNode.removeChild(circle[i]);
+					}
+
+					circle[i] = document.createElementNS(svgNS, "circle");
+
+					var offsetY = ((height_const) / (unit * 2)) * (-1 * temp[1] + unit);
+					var offsetX = ((width_const) / (unit * 2)) * (temp[0] + unit);
+
+					circle[i].setAttributeNS(null, "cx", offsetX);
+					circle[i].setAttributeNS(null, "cy", offsetY);
+					circle[i].setAttributeNS(null, "r", 4);
+
+					if (temp[2] == 0) {
+						circle[i].setAttributeNS(null, "fill", "blue");
+						temp_label = "A";
+					}
+					if (temp[2] == 1) {
+						circle[i].setAttributeNS(null, "fill", "red");
+						temp_label = "B";
+					}
+					if (temp[2] == 2) {
+						circle[i].setAttributeNS(null, "fill", "green");
+						temp_label = "C";
+					}
+					circle[i].addEventListener("click", clickCirc, false);
+					circle[i].addEventListener("mouseover", highLight, false);
+					circle[i].addEventListener("mouseout", nothighLight, false);
+					document.getElementById("display").appendChild(circle[i]);
+
+					var table = document.getElementById("tabletwo");
+					row[i] = table.insertRow(0);
+
+					var round1 = Math.floor(temp[0] * 100) / 100;
+					var round2 = Math.floor(temp[1] * 100) / 100;
+
+					var cell1 = row[i].insertCell(0);
+					var cell2 = row[i].insertCell(1);
+					row[i].className += "special";
+					cell1.className += "special";
+					cell2.className += "special";
+
+					cell1.innerHTML = temp_label;
+					cell2.innerHTML = "(" + round1 + "," + round2 + ")";
+				}
+
+			}
+
+			function highLight(evt) {
+				var Obj = evt.target;
+				Obj.setAttributeNS(null, "fill", "orange");
+
+			}
+
+			function nothighLight(evt) {
+				var Obj = evt.target;
+				var xpos = Obj.getAttributeNS(null, "cx") * (unit * 2 / (width_const)) - unit;
+				var ypos = -1 * (Obj.getAttributeNS(null, "cy") * (unit * 2 / (height_const)) - unit);
+
+				label = dotproductMax(xpos, ypos, real_weights);
+
+				if (label == 0) {
+					Obj.setAttributeNS(null, "fill", "blue");
+
+				}
+				if (label == 1) {
+					Obj.setAttributeNS(null, "fill", "red");
+
+				}
+				if (label == 2) {
+					Obj.setAttributeNS(null, "fill", "green");
+
+				}
+			}
+
+			function clickCirc(evt) {
+				var Obj = evt.target;
+				var xpos = Obj.getAttributeNS(null, "cx") * (unit * 2 / (width_const)) - unit;
+				var ypos = -1 * (Obj.getAttributeNS(null, "cy") * (unit * 2 / (height_const)) - unit);
+
+				var x = 0;
+				var y = 0;
+				for (x; x < max_table_size; x++) {
+					var temp = table_Array[x];
+					if (Math.abs(xpos - temp[0]) < 0.0001) {
+						if (Math.abs(ypos - temp[1]) < 0.0001) {
+							y = x;
+						}
+
+					}
+
+				}
+
+				row[table_Index].style.background = "white";
+				table_Index = y;
+
+				nextTrainingData();
+				document.getElementById("background_" + lineNumber).style.background = "white";
+
+				lineNumber = 1;
+				document.getElementById("background_" + lineNumber).style.background = "orange";
+
+			}
+
+			function displayWeight() {
+				var round1 = Math.floor(show_weights[0] * 100) / 100;
+				var round2 = Math.floor(show_weights[1] * 100) / 100;
+
+				var round3 = Math.floor(show_weights[2] * 100) / 100;
+				var round4 = Math.floor(show_weights[3] * 100) / 100;
+
+				var round5 = Math.floor(show_weights[4] * 100) / 100;
+				var round6 = Math.floor(show_weights[5] * 100) / 100;
+
+				document.getElementById("w_A").innerHTML = "w_A = (" + round1 + ", " + round2 + ")" + "</br>";
+				document.getElementById("w_A").style.color = "blue";
+
+				document.getElementById("w_B").innerHTML = "w_B = (" + round3 + ", " + round4 + ")" + "</br>";
+				document.getElementById("w_B").style.color = "red";
+
+				document.getElementById("w_C").innerHTML = "w_C = (" + round5 + ", " + round6 + ")";
+				document.getElementById("w_C").style.color = "green";
+
+				if (w_A != null) {
+
+					w_A.parentNode.removeChild(w_A);
+				}
+
+				w_A = document.createElementNS(svgNS, "line");
+				var offsetY = ((height_const) / (unit * 2)) * (-1 * show_weights[1] + unit);
+				var offsetX = ((width_const) / (unit * 2)) * (show_weights[0] + unit);
+
+				w_A.setAttributeNS(null, "stroke", "blue");
+				w_A.setAttributeNS(null, "x1", (width_const) / 2);
+				w_A.setAttributeNS(null, "y1", (height_const) / 2);
+				w_A.setAttributeNS(null, "stroke-width", 4);
+				w_A.setAttributeNS(null, "x2", offsetX);
+				w_A.setAttributeNS(null, "y2", offsetY);
+				document.getElementById("display").appendChild(w_A);
+
+				if (w_B != null) {
+
+					w_B.parentNode.removeChild(w_B);
+				}
+
+				w_B = document.createElementNS(svgNS, "line");
+				offsetY = ((height_const) / (unit * 2)) * (-1 * show_weights[3] + unit);
+				offsetX = ((width_const) / (unit * 2)) * (show_weights[2] + unit);
+
+				w_B.setAttributeNS(null, "stroke", "red");
+				w_B.setAttributeNS(null, "x1", (width_const) / 2);
+				w_B.setAttributeNS(null, "y1", (height_const) / 2);
+				w_B.setAttributeNS(null, "stroke-width", 4);
+				w_B.setAttributeNS(null, "x2", offsetX);
+				w_B.setAttributeNS(null, "y2", offsetY);
+
+				if (w_C != null) {
+					w_C.parentNode.removeChild(w_C);
+				}
+
+				document.getElementById("display").appendChild(w_B);
+
+				w_C = document.createElementNS(svgNS, "line");
+				offsetY = ((height_const) / (unit * 2)) * (-1 * show_weights[5] + unit);
+				offsetX = ((width_const) / (unit * 2)) * (show_weights[4] + unit);
+
+				w_C.setAttributeNS(null, "stroke", "green");
+				w_C.setAttributeNS(null, "x1", (width_const) / 2);
+				w_C.setAttributeNS(null, "y1", (height_const) / 2);
+				w_C.setAttributeNS(null, "stroke-width", 4);
+				w_C.setAttributeNS(null, "x2", offsetX);
+				w_C.setAttributeNS(null, "y2", offsetY);
+
+				document.getElementById("display").appendChild(w_C);
+
+				//determineBound();
+				//if(crossC != null){
+				//document.getElementById("display").removeChild(crossC);
+				//document.getElementById("display").removeChild(crossA);
+				//document.getElementById("display").removeChild(crossB);
+				//}
+
+				displayCross(w_C, crossC, "green", true);
+				displayCross(w_A, crossA, "blue", true);
+				displayCross(w_B, crossB, "red", true);
+
+			}
+
+			function displayOffset(Obj, crossH, color, replace) {
+				var xpos1 = Obj.getAttributeNS(null, "x1") * (unit * 2 / (width_const)) - unit;
+				var ypos1 = -1 * (Obj.getAttributeNS(null, "y1") * (unit * 2 / (height_const)) - unit);
+
+				var xpos2 = Obj.getAttributeNS(null, "x2") * (unit * 2 / (width_const)) - unit;
+				var ypos2 = -1 * (Obj.getAttributeNS(null, "y2") * (unit * 2 / (height_const)) - unit);
+
+				var orgAngle = Math.atan((ypos2 - ypos1) / (xpos2 - xpos1));
+
+				if (xpos2 < xpos1) {
+					orgAngle = orgAngle + Math.PI;
+				}
+				var angle = (135 / 180) * Math.PI;
+
+				var len = 0.3 / 5 * unit;
+				var xlen = len * Math.cos(orgAngle + angle) + xpos2;
+				var ylen = len * Math.sin(orgAngle + angle) + ypos2;
+
+				var xlen2 = len * Math.cos(orgAngle - angle) + xpos2;
+				var ylen2 = len * Math.sin(orgAngle - angle) + ypos2;
+
+				if (replace) {
+					if (crossH[0] != null && crossH[1] != null) {
+						crossH[0].parentNode.removeChild(crossH[0]);
+						crossH[1].parentNode.removeChild(crossH[1]);
+					}
+				}
+
+				crossH[0] = document.createElementNS(svgNS, "line");
+				var offsetY = ((height_const) / (unit * 2)) * (-1 * ylen + unit);
+				var offsetX = ((width_const) / (unit * 2)) * (xlen + unit);
+
+				crossH[0].setAttributeNS(null, "stroke", color);
+				crossH[0].setAttributeNS(null, "x1", Obj.getAttributeNS(null, "x2"));
+				crossH[0].setAttributeNS(null, "y1", Obj.getAttributeNS(null, "y2"));
+				crossH[0].setAttributeNS(null, "stroke-width", 4);
+				crossH[0].setAttributeNS(null, "x2", offsetX);
+				crossH[0].setAttributeNS(null, "y2", offsetY);
+
+				document.getElementById("display").appendChild(crossH[0]);
+
+				crossH[1] = document.createElementNS(svgNS, "line");
+				offsetY = ((height_const) / (unit * 2)) * (-1 * ylen2 + unit);
+				offsetX = ((width_const) / (unit * 2)) * (xlen2 + unit);
+
+				crossH[1].setAttributeNS(null, "stroke", color);
+				crossH[1].setAttributeNS(null, "x1", Obj.getAttributeNS(null, "x2"));
+				crossH[1].setAttributeNS(null, "y1", Obj.getAttributeNS(null, "y2"));
+				crossH[1].setAttributeNS(null, "stroke-width", 4);
+				crossH[1].setAttributeNS(null, "x2", offsetX);
+				crossH[1].setAttributeNS(null, "y2", offsetY);
+
+				document.getElementById("display").appendChild(crossH[1]);
+			}
+
+			function displayCross(Obj, crossH, color, replace) {
+				var xpos = Obj.getAttributeNS(null, "x2") * (unit * 2 / (width_const)) - unit;
+				var ypos = -1 * (Obj.getAttributeNS(null, "y2") * (unit * 2 / (height_const)) - unit);
+				var orgAngle = Math.atan(ypos / xpos);
+
+				if (xpos < 0) {
+					orgAngle = Math.PI + orgAngle;
+				}
+
+				var angle = (135 / 180) * Math.PI;
+
+				var len = 0.3 / 5 * unit;
+				var xlen = len * Math.cos(orgAngle + angle) + xpos;
+				var ylen = len * Math.sin(orgAngle + angle) + ypos;
+
+				var xlen2 = len * Math.cos(orgAngle - angle) + xpos;
+				var ylen2 = len * Math.sin(orgAngle - angle) + ypos;
+
+				if (replace) {
+					if (crossH[0] != null && crossH[1] != null) {
+						crossH[0].parentNode.removeChild(crossH[0]);
+						crossH[1].parentNode.removeChild(crossH[1]);
+					}
+				}
+
+				crossH[0] = document.createElementNS(svgNS, "line");
+				var offsetY = ((height_const) / (unit * 2)) * (-1 * ylen + unit);
+				var offsetX = ((width_const) / (unit * 2)) * (xlen + unit);
+
+				crossH[0].setAttributeNS(null, "stroke", color);
+				crossH[0].setAttributeNS(null, "x1", Obj.getAttributeNS(null, "x2"));
+				crossH[0].setAttributeNS(null, "y1", Obj.getAttributeNS(null, "y2"));
+				crossH[0].setAttributeNS(null, "stroke-width", 4);
+				crossH[0].setAttributeNS(null, "x2", offsetX);
+				crossH[0].setAttributeNS(null, "y2", offsetY);
+
+				document.getElementById("display").appendChild(crossH[0]);
+
+				crossH[1] = document.createElementNS(svgNS, "line");
+				offsetY = ((height_const) / (unit * 2)) * (-1 * ylen2 + unit);
+				offsetX = ((width_const) / (unit * 2)) * (xlen2 + unit);
+
+				crossH[1].setAttributeNS(null, "stroke", color);
+				crossH[1].setAttributeNS(null, "x1", Obj.getAttributeNS(null, "x2"));
+				crossH[1].setAttributeNS(null, "y1", Obj.getAttributeNS(null, "y2"));
+				crossH[1].setAttributeNS(null, "stroke-width", 4);
+				crossH[1].setAttributeNS(null, "x2", offsetX);
+				crossH[1].setAttributeNS(null, "y2", offsetY);
+
+				document.getElementById("display").appendChild(crossH[1]);
+
+			}
+
+			function dotproductMax(vector1, vector2, weights) {
+				var max = -1000;
+				var maxLabel = 0;
+				var i = 0;
+				var j = 0;
+				var vector = new Array(2);
+				vector[0] = vector1;
+				vector[1] = vector2;
+				for (i; i < 3; i++) {
+					var temp = 0;
+
+					j = 0;
+					for (j; j < 2; j++) {
+						temp += weights[i * 2 + j] * vector[j];
+					}
+					if (temp > max) {
+						max = temp;
+						maxLabel = i;
+					}
+				}
+
+				return maxLabel;
+
+			}
+
+			function step() {
+
+				document.getElementById("background_" + lineNumber).style.background = "white";
+				if (lineNumber == 1) {
+					nextTrainingData();
+					lineNumber += 1;
+				} else if (lineNumber == 2) {
+					updateChoose();
+					compLabel = dotproductMax(testData[0], testData[1], show_weights);
+
+					if (compLabel == 0) {
+						compLabel = "A";
+					}
+					if (compLabel == 1) {
+						compLabel = "B";
+					}
+					if (compLabel == 2) {
+						compLabel = "C";
+					}
+					displayChoose();
+					lineNumber += 1;
+				} else if (lineNumber == 3) {
+					if (compLabel == testLabel) {
+						lineNumber = 1;
+						if (table_Index != 0) {
+							table_Index = table_Index - 1;
+						} else {
+							table_Index = max_table_size - 1;
+						}
+
+					} else {
+						lineNumber += 1;
+					}
+
+				} else if (lineNumber == 4) {
+					upDateWeight();
+
+					setTimeout(function() {
+						displayWeight()
+					}, 10 * 100);
+					determineBound();
+
+					lineNumber += 1;
+				} else if (lineNumber == 5) {
+					upDateWeight2();
+					//normalize(show_weights);
+					setTimeout(function() {
+						displayWeight()
+					}, 10 * 100);
+					determineBound();
+
+					lineNumber = 1;
+					if (table_Index != 0) {
+						table_Index = table_Index - 1;
+					} else {
+						table_Index = max_table_size - 1;
+					}
+
+				}
+				document.getElementById("background_" + lineNumber).style.background = "orange";
+			}
+
+			function updateChoose() {
+				choose[0] = show_weights[0] * testData[0] + show_weights[1] * testData[1];
+
+				choose[1] = show_weights[2] * testData[0] + show_weights[3] * testData[1];
+
+				choose[2] = show_weights[4] * testData[0] + show_weights[5] * testData[1];
+
+			}
+
+			function upDateWeight() {
+				var x;
+				var color;
+				if (compLabel == "A") {
+					x = 0;
+					color = "blue";
+				} else if (compLabel == "B") {
+					x = 1;
+					color = "red";
+				} else {
+					x = 2;
+					color = "green";
+				}
+
+				var i = 0;
+				var tempVec = new Array(2);
+				var tempVec2 = new Array(2);
+				tempVec[0] = show_weights[x * 2];
+				tempVec[1] = show_weights[x * 2 + 1];
+				tempVec2[0] = -1 * testData[0];
+				tempVec2[1] = -1 * testData[1];
+				displayAdd(tempVec, tempVec2, color);
+
+				for (i; i < 2; i++) {
+					show_weights[x * 2 + i] = show_weights[x * 2 + i] - testData[i];
+				}
+
+			}
+
+			function upDateWeight2() {
+				var x;
+				var color;
+				if (testLabel == "A") {
+					x = 0;
+					color = "blue";
+				} else if (testLabel == "B") {
+					x = 1;
+					color = "red";
+				} else {
+					x = 2;
+					color = "green";
+				}
+				var i = 0;
+				var tempVec = new Array(2);
+				tempVec[0] = show_weights[x * 2];
+				tempVec[1] = show_weights[x * 2 + 1];
+
+				displayAdd(tempVec, testData, color);
+
+				for (i; i < 2; i++) {
+					show_weights[x * 2 + i] = show_weights[x * 2 + i] + testData[i];
+				}
+			}
+
+			function upDateWeightF() {
+				var x;
+				var color;
+				if (compLabel == "A") {
+					x = 0;
+					color = "blue";
+				} else if (compLabel == "B") {
+					x = 1;
+					color = "red";
+				} else {
+					x = 2;
+					color = "green";
+				}
+
+				var i = 0;
+				var tempVec = new Array(2);
+				var tempVec2 = new Array(2);
+				tempVec[0] = show_weights[x * 2];
+				tempVec[1] = show_weights[x * 2 + 1];
+				tempVec2[0] = -1 * testData[0];
+				tempVec2[1] = -1 * testData[1];
+				// displayAdd(tempVec, tempVec2, color);
+
+				for (i; i < 2; i++) {
+					show_weights[x * 2 + i] = show_weights[x * 2 + i] - testData[i];
+				}
+
+			}
+
+			function upDateWeight2F() {
+				var x;
+				var color;
+				if (testLabel == "A") {
+					x = 0;
+					color = "blue";
+				} else if (testLabel == "B") {
+					x = 1;
+					color = "red";
+				} else {
+					x = 2;
+					color = "green";
+				}
+				var i = 0;
+				var tempVec = new Array(2);
+				tempVec[0] = show_weights[x * 2];
+				tempVec[1] = show_weights[x * 2 + 1];
+
+				// displayAdd(tempVec, testData, color);
+
+				for (i; i < 2; i++) {
+					show_weights[x * 2 + i] = show_weights[x * 2 + i] + testData[i];
+				}
+			}
+
+			function finnish() {
+
+				row[table_Index].style.background = "white";
+				table_Index = 0;
+				var last_Change;
+				while (true) {
+					table_Index = 0;
+					last_Change = true;
+					for (table_Index; table_Index < max_table_size; table_Index++) {
+						var temp = table_Array[table_Index];
+						testData[0] = temp[0];
+						testData[1] = temp[1];
+
+						testLabel = dotproductMax(testData[0], testData[1], real_weights);
+						compLabel = dotproductMax(testData[0], testData[1], show_weights);
+
+						if (compLabel == 0) {
+							compLabel = "A";
+						}
+						if (compLabel == 1) {
+							compLabel = "B";
+						}
+						if (compLabel == 2) {
+							compLabel = "C";
+						}
+
+						if (testLabel == 0) {
+							testLabel = "A";
+						}
+						if (testLabel == 1) {
+							testLabel = "B";
+						}
+						if (testLabel == 2) {
+							testLabel = "C";
+						}
+
+						if (compLabel != testLabel) {
+							upDateWeightF();
+							upDateWeight2F();
+							//normalize(show_weights);
+							displayWeight();
+							determineBound();
+							last_Change = false;
+						}
+
+					}
+					if (last_Change) {
+						break;
+					}
+
+				}
+
+				table_Index = max_table_size - 1;
+				nextTrainingData();
+				document.getElementById("background_" + lineNumber).style.background = "white";
+
+				lineNumber = 1;
+				document.getElementById("background_" + lineNumber).style.background = "orange";
+				determineBound();
+			}
+
+			function reset() {
+
+				document.getElementById("background_" + lineNumber).style.background = "white";
+
+				lineNumber = 1;
+				document.getElementById("background_" + lineNumber).style.background = "orange";
+
+				show_weights[0] = (Math.random() * 10) - 5;
+				show_weights[1] = (Math.random() * 10) - 5;
+
+				show_weights[2] = (Math.random() * 10) - 5;
+				show_weights[3] = (Math.random() * 10) - 5;
+
+				show_weights[4] = (Math.random() * 10) - 5;
+				show_weights[5] = (Math.random() * 10) - 5;
+
+				//normalize(show_weights);
+				initTable();
+				displayWeight();
+				determineBound();
+				table_Index = max_table_size - 1;
+				nextTrainingData();
+
+			}
+
+			function redraw() {
+				var backRect = document.createElementNS(svgNS, "rect");
+				backRect.setAttributeNS(null, "width", width_const);
+				backRect.setAttributeNS(null, "height", height_const);
+				backRect.setAttributeNS(null, "stroke", "pink");
+				backRect.setAttributeNS(null, "stroke-width", 5);
+				backRect.setAttributeNS(null, "fill", "blue");
+				backRect.setAttributeNS(null, "fill-opacity", 0.0);
+				backRect.setAttributeNS(null, "stroke-opacity", 0.9);
+				document.getElementById("display").appendChild(backRect);
+
+				var offset = (width_const) / (2 * 5);
+				var gridVert = new Array(9);
+				var gridHorz = new Array(9);
+				var i = 0;
+				for (i; i < 9; i++) {
+
+					if (i != 4) {
+						gridVert[i] = document.createElementNS(svgNS, "line");
+						gridVert[i].setAttributeNS(null, "stroke", "rgb(200,200,200)");
+						gridVert[i].setAttributeNS(null, "stroke-width", 3);
+						gridVert[i].setAttributeNS(null, "y1", 0);
+						gridVert[i].setAttributeNS(null, "y2", (height_const));
+
+						gridVert[i].setAttributeNS(null, "x1", offset * (i + 1));
+						gridVert[i].setAttributeNS(null, "x2", offset * (i + 1));
+						document.getElementById("display").appendChild(gridVert[i]);
+
+						gridHorz[i] = document.createElementNS(svgNS, "line");
+						gridHorz[i].setAttributeNS(null, "stroke", "rgb(200,200,200)");
+						gridHorz[i].setAttributeNS(null, "stroke-width", 3);
+						gridHorz[i].setAttributeNS(null, "x1", 0);
+						gridHorz[i].setAttributeNS(null, "x2", (width_const));
+
+						gridHorz[i].setAttributeNS(null, "y1", offset * (i + 1));
+						gridHorz[i].setAttributeNS(null, "y2", offset * (i + 1));
+						document.getElementById("display").appendChild(gridHorz[i]);
+
+					}
+
+				}
+
+				var horizontalAxis = document.createElementNS(svgNS, "line");
+				horizontalAxis.setAttributeNS(null, "stroke", "black");
+				horizontalAxis.setAttributeNS(null, "stroke-width", 3);
+				horizontalAxis.setAttributeNS(null, "y1", (height_const) / 2);
+				horizontalAxis.setAttributeNS(null, "y2", (height_const) / 2);
+
+				horizontalAxis.setAttributeNS(null, "x1", 0);
+				horizontalAxis.setAttributeNS(null, "x2", width_const);
+				document.getElementById("display").appendChild(horizontalAxis);
+
+				var verticalAxis = document.createElementNS(svgNS, "line");
+				verticalAxis.setAttributeNS(null, "stroke", "black");
+				verticalAxis.setAttributeNS(null, "stroke-width", 3);
+				verticalAxis.setAttributeNS(null, "y1", 0);
+				verticalAxis.setAttributeNS(null, "y2", (height_const));
+
+				verticalAxis.setAttributeNS(null, "x1", (width_const) / 2);
+				verticalAxis.setAttributeNS(null, "x2", (width_const) / 2);
+				document.getElementById("display").appendChild(verticalAxis);
+
+				var vertDisp = new Array(11);
+				var horzDisp = new Array(11);
+
+				i = 0;
+				for (i; i < 11; i++) {
+					if (i != 5) {
+						vertDisp[i] = document.createElementNS(svgNS, "text");
+						vertDisp[i].setAttributeNS(null, "fill", "orange");
+
+						vertDisp[i].setAttributeNS(null, "x", offset * (i));
+						vertDisp[i].setAttributeNS(null, "y", (height_const) / 2 + height_const / 50 + 2);
+						var round1 = Math.floor((i - 5) * (unit / 5) * 100) / 100;
+						var textNode = document.createTextNode("" + round1);
+						vertDisp[i].appendChild(textNode);
+						document.getElementById("display").appendChild(vertDisp[i]);
+
+						horzDisp[i] = document.createElementNS(svgNS, "text");
+						horzDisp[i].setAttributeNS(null, "fill", "orange");
+
+						horzDisp[i].setAttributeNS(null, "y", offset * (i) + height_const / 50);
+						horzDisp[i].setAttributeNS(null, "x", (width_const) / 2 + width_const / 100);
+
+						var round2 = Math.floor(-1 * (i - 5) * (unit / 5) * 100) / 100;
+						var textNode2 = document.createTextNode("" + round2);
+						horzDisp[i].appendChild(textNode2);
+						document.getElementById("display").appendChild(horzDisp[i]);
+
+					}
+				}
+
+			}
+
+			function determineBound() {
+				//x1*g1 + x2*g2 = x1*b1 + x2*b2;
+				//x1*(g1-b1) = x2*(b2-g2)
+				//x1= x2*(b2-g2)/(g1-b1)
+				//set x2 as 1 calc x1
+				//rescale
+
+				var vecA = new Array(2);
+				var vecB = new Array(2);
+				var vecC = new Array(2);
+
+				vecA[0] = show_weights[0];
+				vecA[1] = show_weights[1];
+
+				vecB[0] = show_weights[2];
+				vecB[1] = show_weights[3];
+
+				vecC[0] = show_weights[4];
+				vecC[1] = show_weights[5];
+
+				boundA_B = bound(vecA, vecB);
+				boundA_C = bound(vecA, vecC);
+				boundB_C = bound(vecC, vecB);
+
+				boundA_BO[0] = -1 * boundA_B[0];
+				boundA_BO[1] = -1 * boundA_B[1];
+
+				boundA_CO[0] = -1 * boundA_C[0];
+				boundA_CO[1] = -1 * boundA_C[1];
+
+				boundB_CO[0] = -1 * boundB_C[0];
+				boundB_CO[1] = -1 * boundB_C[1];
+
+				normalizeBound(boundA_B);
+				normalizeBound(boundA_C);
+				normalizeBound(boundB_C);
+				normalizeBound(boundA_BO);
+				normalizeBound(boundA_CO);
+				normalizeBound(boundB_CO);
+
+				//displayBound();
+				//displayBoundO();
+				displayPath(true);
+			}
+
+			function redrawBound() {
+
+				var vecA = new Array(2);
+				var vecB = new Array(2);
+				var vecC = new Array(2);
+
+				vecA[0] = show_weights[0];
+				vecA[1] = show_weights[1];
+
+				vecB[0] = show_weights[2];
+				vecB[1] = show_weights[3];
+
+				vecC[0] = show_weights[4];
+				vecC[1] = show_weights[5];
+
+				boundA_B = bound(vecA, vecB);
+				boundA_C = bound(vecA, vecC);
+				boundB_C = bound(vecC, vecB);
+
+				boundA_BO[0] = -1 * boundA_B[0];
+				boundA_BO[1] = -1 * boundA_B[1];
+
+				boundA_CO[0] = -1 * boundA_C[0];
+				boundA_CO[1] = -1 * boundA_C[1];
+
+				boundB_CO[0] = -1 * boundB_C[0];
+				boundB_CO[1] = -1 * boundB_C[1];
+
+				normalizeBound(boundA_B);
+				normalizeBound(boundA_C);
+				normalizeBound(boundB_C);
+				normalizeBound(boundA_BO);
+				normalizeBound(boundA_CO);
+				normalizeBound(boundB_CO);
+
+				//displayBound();
+				//displayBoundO();
+				displayPath(false);
+			}
+
+			function displayBound(redraw) {
+
+				var offsetY = ((height_const) / (unit * 2)) * (-1 * boundA_B[1] + unit);
+				var offsetX = ((width_const) / (unit * 2)) * (boundA_B[0] + unit);
+
+				if (redraw) {
+					if (vecAB != null) {
+
+						vecAB.parentNode.removeChild(vecAB);
+					}
+
+					if (vecAC != null) {
+
+						vecAC.parentNode.removeChild(vecAC);
+					}
+					if (vecBC != null) {
+
+						vecBC.parentNode.removeChild(vecBC);
+					}
+				}
+				vecAB = document.createElementNS(svgNS, "line");
+				vecAB.setAttributeNS(null, "stroke", "orange");
+				vecAB.setAttributeNS(null, "stroke-width", 2);
+				vecAB.setAttributeNS(null, "y1", (height_const ) / 2);
+				vecAB.setAttributeNS(null, "y2", offsetY);
+
+				vecAB.setAttributeNS(null, "x1", (width_const ) / 2);
+				vecAB.setAttributeNS(null, "x2", offsetX);
+				document.getElementById("display").appendChild(vecAB);
+
+				offsetY = ((height_const ) / (unit * 2)) * (-1 * boundA_C[1] + unit);
+				offsetX = ((width_const) / (unit * 2)) * (boundA_C[0] + unit);
+
+				vecAC = document.createElementNS(svgNS, "line");
+				vecAC.setAttributeNS(null, "stroke", "orange");
+				vecAC.setAttributeNS(null, "stroke-width", 2);
+				vecAC.setAttributeNS(null, "y1", (height_const) / 2);
+				vecAC.setAttributeNS(null, "y2", offsetY);
+
+				vecAC.setAttributeNS(null, "x1", (width_const) / 2);
+				vecAC.setAttributeNS(null, "x2", offsetX);
+				document.getElementById("display").appendChild(vecAC);
+
+				offsetY = ((height_const ) / (unit * 2)) * (-1 * boundB_C[1] + unit);
+				offsetX = ((width_const ) / (unit * 2)) * (boundB_C[0] + unit);
+
+				vecBC = document.createElementNS(svgNS, "line");
+				vecBC.setAttributeNS(null, "stroke", "orange");
+				vecBC.setAttributeNS(null, "stroke-width", 2);
+				vecBC.setAttributeNS(null, "y1", (height_const) / 2);
+				vecBC.setAttributeNS(null, "y2", offsetY);
+
+				vecBC.setAttributeNS(null, "x1", (width_const) / 2);
+				vecBC.setAttributeNS(null, "x2", offsetX);
+				document.getElementById("display").appendChild(vecBC);
+
+			}
+
+			function displayAdd(vec1, vec2, color) {
+
+				var interVal = 100;
+
+				var addX = vec2[0] / interVal;
+				var addY = vec2[1] / interVal;
+
+				var tempVec = new Array(2);
+
+				tempVec[0] = vec1[0] + vec2[0];
+				tempVec[1] = vec1[1] + vec2[1];
+
+				tempVec[1] = ((height_const) / (unit * 2)) * (-1 * tempVec[1] + unit);
+				tempVec[0] = ((width_const) / (unit * 2)) * (tempVec[0] + unit);
+
+				var movingAdd;
+
+				var offsetY = ((height_const) / (unit * 2)) * (-1 * vec1[1] + unit);
+				var offsetX = ((width_const) / (unit * 2)) * (vec1[0] + unit);
+
+				var temp_Vector2 = document.createElementNS(svgNS, "line");
+				var add_vector_cross = new Array(2);
+				temp_Vector2.setAttributeNS(null, "stroke", "orange");
+				temp_Vector2.setAttributeNS(null, "stroke-width", 4);
+				temp_Vector2.setAttributeNS(null, "y1", offsetY);
+				temp_Vector2.setAttributeNS(null, "y2", tempVec[1]);
+
+				temp_Vector2.setAttributeNS(null, "x1", offsetX);
+				temp_Vector2.setAttributeNS(null, "x2", tempVec[0]);
+				document.getElementById("display").appendChild(temp_Vector2);
+
+				displayOffset(temp_Vector2, add_vector_cross, "orange", false);
+
+				var crossTemp = new Array(2);
+
+				var i = 0;
+
+				var theVec = vec1[0];
+				var theVec2 = vec1[1];
+				var time = 0;
+
+				for (i; i < interVal; i++) {
+
+					time = 10 * i;
+					theVec += addX;
+					theVec2 += addY;
+					move(movingAdd, crossTemp, theVec, theVec2, color, time, true);
+
+				}
+
+				setTimeout(function() {
+					removeVec(temp_Vector2)
+				}, 10 * interVal);
+				setTimeout(function() {
+					removeCross(add_vector_cross)
+				}, 10 * interVal);
+			}
+
+			function move(vec, cross, newX, newY, color, time) {
+				//var clear;
+
+				var offsetY = ((height_const) / (unit * 2)) * (-1 * newY + unit);
+				var offsetX = ((width_const) / (unit * 2)) * (newX + unit);
+
+				vec = document.createElementNS(svgNS, "line");
+				vec.setAttributeNS(null, "stroke", color);
+				vec.setAttributeNS(null, "stroke-width", 4);
+				vec.setAttributeNS(null, "y1", height_const / 2);
+				vec.setAttributeNS(null, "y2", offsetY);
+
+				vec.setAttributeNS(null, "x1", width_const / 2);
+				vec.setAttributeNS(null, "x2", offsetX);
+				setTimeout(function() {
+					disT(vec)
+				}, time);
+
+				setTimeout(function() {
+					displayCross(vec, cross, color, false)
+				}, time);
+
+				setTimeout(function() {
+					removeVec(vec)
+				}, time + 10);
+
+				setTimeout(function() {
+					removeCross(cross)
+				}, time + 10);
+
+				//setdisplayCross(vec, cross, color);
+			}
+
+			function disT(vec) {
+				document.getElementById("display").appendChild(vec);
+
+			}
+
+			function removeVec(vec) {
+				document.getElementById("display").removeChild(vec);
+
+			}
+
+			function removeCross(cross) {
+				document.getElementById("display").removeChild(cross[0]);
+				document.getElementById("display").removeChild(cross[1]);
+
+			}
+
+			function displayBoundO() {
+
+				var offsetY = ((height_const ) / (unit * 2)) * (-1 * boundA_BO[1] + unit);
+				var offsetX = ((width_const ) / (unit * 2)) * (boundA_BO[0] + unit);
+
+				if (vecABO != null) {
+
+					vecABO.parentNode.removeChild(vecABO);
+				}
+
+				if (vecACO != null) {
+
+					vecACO.parentNode.removeChild(vecACO);
+				}
+				if (vecBCO != null) {
+
+					vecBCO.parentNode.removeChild(vecBCO);
+				}
+
+				vecABO = document.createElementNS(svgNS, "line");
+				vecABO.setAttributeNS(null, "stroke", "orange");
+				vecABO.setAttributeNS(null, "stroke-width", 2);
+				vecABO.setAttributeNS(null, "y1", (height_const ) / 2);
+				vecABO.setAttributeNS(null, "y2", offsetY);
+
+				vecABO.setAttributeNS(null, "x1", (width_const ) / 2);
+				vecABO.setAttributeNS(null, "x2", offsetX);
+				document.getElementById("display").appendChild(vecABO);
+
+				offsetY = ((height_const ) / (unit * 2)) * (-1 * boundA_CO[1] + unit);
+				offsetX = ((width_const ) / (unit * 2)) * (boundA_CO[0] + unit);
+
+				vecACO = document.createElementNS(svgNS, "line");
+				vecACO.setAttributeNS(null, "stroke", "orange");
+				vecACO.setAttributeNS(null, "stroke-width", 2);
+				vecACO.setAttributeNS(null, "y1", (height_const ) / 2);
+				vecACO.setAttributeNS(null, "y2", offsetY);
+
+				vecACO.setAttributeNS(null, "x1", (width_const ) / 2);
+				vecACO.setAttributeNS(null, "x2", offsetX);
+				document.getElementById("display").appendChild(vecACO);
+
+				offsetY = ((height_const ) / (unit * 2)) * (-1 * boundB_CO[1] + unit);
+				offsetX = ((width_const ) / (unit * 2)) * (boundB_CO[0] + unit);
+
+				vecBCO = document.createElementNS(svgNS, "line");
+				vecBCO.setAttributeNS(null, "stroke", "orange");
+				vecBCO.setAttributeNS(null, "stroke-width", 2);
+				vecBCO.setAttributeNS(null, "y1", (height_const ) / 2);
+				vecBCO.setAttributeNS(null, "y2", offsetY);
+
+				vecBCO.setAttributeNS(null, "x1", (width_const ) / 2);
+				vecBCO.setAttributeNS(null, "x2", offsetX);
+				document.getElementById("display").appendChild(vecBCO);
+
+			}
+
+			function displayPath(redraw) {
+				var keys = new Array(10);
+				//var vals = new Array(6);
+				var corner1 = new Array(2);
+				var corner2 = new Array(2);
+				var corner3 = new Array(2);
+				var corner4 = new Array(2);
+
+				corner1[0] = unit;
+				corner1[1] = unit;
+
+				corner2[0] = -1 * unit;
+				corner2[1] = unit;
+
+				corner3[0] = -1 * unit;
+				corner3[1] = -1 * unit;
+
+				corner4[0] = unit;
+				corner4[1] = -1 * unit;
+
+				keys[0] = boundA_B;
+				keys[1] = boundA_C;
+				keys[2] = boundB_C;
+				keys[3] = boundA_BO;
+				keys[4] = boundA_CO;
+				keys[5] = boundB_CO;
+				keys[6] = corner1;
+				keys[7] = corner2;
+				keys[8] = corner3;
+				keys[9] = corner4;
+
+				var repeat;
+				var i;
+				while (true) {
+					i = 0;
+					repeat = true;
+					for (i; i < 9; i++) {
+						var temp = keys[i];
+						var temp2 = keys[i + 1];
+						var angle = Math.atan(temp[1] / temp[0]);
+						var angle2 = Math.atan(temp2[1] / temp2[0]);
+
+						if (temp[0] < 0) {
+							angle = angle + Math.PI;
+						}
+						if (temp2[0] < 0) {
+							angle2 = angle2 + Math.PI;
+						}
+
+						if (temp[0] == 0) {
+							if (temp[1] < 0) {
+								angle = angle + Math.PI;
+							}
+						}
+
+						if (temp2[0] == 0) {
+							if (temp2[1] < 0) {
+								angle2 = angle2 + Math.PI;
+							}
+						}
+
+						if (angle > angle2) {
+							//switch and repeat
+							var temp4 = keys[i + 1];
+							keys[i + 1] = keys[i];
+							keys[i] = temp4;
+							repeat = false;
+						}
+
+					}
+					if (repeat) {
+						break;
+					}
+				}
+
+				i = 0;
+				for (i; i < 10; i++) {
+					var line1 = keys[i];
+					var line2;
+					if (i != 9) {
+						line2 = keys[i + 1];
+					} else {
+						line2 = keys[0];
+					}
+					if (redraw) {
+						if (paths[i] != null) {
+							paths[i].parentNode.removeChild(paths[i]);
+
+						}
+					}
+					var color = chooseColor(line1, line2);
+
+					var offsetY = ((height_const ) / (unit * 2)) * (-1 * line1[1] + unit);
+					var offsetX = ((width_const ) / (unit * 2)) * (line1[0] + unit);
+
+					var offsetY2 = ((height_const ) / (unit * 2)) * (-1 * line2[1] + unit);
+					var offsetX2 = ((width_const ) / (unit * 2)) * (line2[0] + unit);
+
+					paths[i] = document.createElementNS(svgNS, "path");
+					//paths[i].setAttributeNS(null, "stroke", "orange");
+					paths[i].setAttributeNS(null, "stroke-width", 2);
+					paths[i].setAttributeNS(null, "d", "M " + (width_const ) / 2 + " " + (height_const ) / 2 + " L" + offsetX + " " + offsetY + " L" + offsetX2 + " " + offsetY2 + " L" + (width_const ) / 2 + " " + (height_const) / 2);
+
+					paths[i].setAttributeNS(null, "fill-opacity", 0.1);
+
+					paths[i].setAttributeNS(null, "fill", color);
+
+					document.getElementById("display").appendChild(paths[i]);
+					paths[i].parentNode.insertBefore(paths[i], paths[i].parentNode.firstChild);
+
+				}
+
+			}
+
+			function chooseColor(vect1, vect2) {
+
+				var midptX = (vect1[0] + vect2[0]) / 2;
+				var midptY = (vect1[1] + vect2[1]) / 2;
+
+				var labelColor = dotproductMax(midptX, midptY, show_weights);
+
+				if (labelColor == 0) {
+					return "blue";
+				}
+				if (labelColor == 1) {
+					return "red";
+				}
+				if (labelColor == 2) {
+					return "green";
+				}
+				//return "blue";
+			}
+
+			function bound(vector1, vector2) {
+				var toReturn = new Array(2);
+
+				toReturn[0] = 1;
+
+				if ((vector2[1] - vector1[1]) == 0) {
+					if ((vector1[0] - vector2[0]) != 0) {
+						toReturn[0] = 0;
+						toReturn[1] = 1;
+						return toReturn;
+					}
+
+					toReturn[0] = 0;
+					toReturn[1] = 0;
+
+					return toReturn;
+				} else {
+
+					toReturn[1] = (vector1[0] - vector2[0]) / (vector2[1] - vector1[1]);
+					return toReturn;
+				}
+			}
+
+			function angle(vector1, vector2) {
+
+				var cos_trig = (vector1[0] * vector2[0] + vector1[1] * vector2[1]) / (mag(vector1) * mag(vector2));
+
+				return Math.acos(cos_trig);
+			}
+
+			function mag(vector) {
+
+				return Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
+			}
+
+			function normalize(weights) {
+				var i = 0;
+				for (i; i < 3; i++) {
+					var tempVec = new Array(2);
+					tempVec[0] = weights[i * 2];
+					tempVec[1] = weights[i * 2 + 1];
+
+					if (mag(tempVec) == 0) {
+						while (true) {
+							tempVec[0] = Math.floor(Math.random() * 11) - 5;
+							tempVec[1] = Math.floor(Math.random() * 11) - 5;
+
+							if (mag(tempVec) != 0) {
+
+								break;
+							}
+						}
+
+					}
+					weights[i * 2] = tempVec[0];
+					weights[i * 2 + 1] = tempVec[1];
+
+					var x = Math.sqrt(weights[i * 2] * weights[i * 2] + weights[i * 2 + 1] * weights[i * 2 + 1]) / 4;
+					weights[i * 2] = weights[i * 2] / x;
+					weights[i * 2 + 1] = weights[i * 2 + 1] / x;
+				}
+
+			}
+
+			function normalizeBound(vector) {
+				vector[0] = vector[0] / mag(vector);
+				vector[1] = vector[1] / mag(vector);
+				var mult = 1;
+				if (Math.abs(vector[0]) > Math.abs(vector[1])) {
+
+					mult = unit / (Math.abs(vector[0]));
+
+				} else {
+					mult = unit / (Math.abs(vector[1]));
+
+				}
+				vector[0] = vector[0] * mult;
+				vector[1] = vector[1] * mult;
+
+			}
+
+			function continueProg() {
+
+				document.getElementById("background_" + lineNumber).style.background = "white";
+				if (lineNumber == 1) {
+					nextTrainingData();
+					lineNumber += 1;
+				} else if (lineNumber == 2) {
+					updateChoose();
+					compLabel = dotproductMax(testData[0], testData[1], show_weights);
+
+					if (compLabel == 0) {
+						compLabel = "A";
+					}
+					if (compLabel == 1) {
+						compLabel = "B";
+					}
+					if (compLabel == 2) {
+						compLabel = "C";
+					}
+					displayChoose();
+					lineNumber += 1;
+				} else if (lineNumber == 3) {
+					if (compLabel == testLabel) {
+						lineNumber = 1;
+						if (table_Index != 0) {
+							table_Index = table_Index - 1;
+						} else {
+							table_Index = max_table_size - 1;
+						}
+
+					} else {
+						lineNumber += 1;
+					}
+
+				} else if (lineNumber == 4) {
+					upDateWeight();
+
+					setTimeout(function() {
+						displayWeight()
+					}, 10 * 100);
+					determineBound();
+
+					lineNumber += 1;
+				} else if (lineNumber == 5) {
+					upDateWeight2();
+					//normalize(show_weights);
+					setTimeout(function() {
+						displayWeight()
+					}, 10 * 100);
+					determineBound();
+
+					lineNumber = 1;
+					if (table_Index != 0) {
+						table_Index = table_Index - 1;
+					} else {
+						table_Index = max_table_size - 1;
+					}
+
+				}
+				document.getElementById("background_" + lineNumber).style.background = "orange";
+
+				setTimeout(function() {
+					continueProgHelper()
+				}, 10 * 100);
+
+			}
+
+			function continueProgHelper() {
+				if (checkClear) {
+					checkClear = false;
+					return;
+				}
+
+				if (listArray[lineNumber] == 1) {
+					return;
+				} else {
+					continueProg();
+				}
+			}
+
+			function checkClearEnd() {
+				checkClear = true;
+			}
+
+			function circleBig(obj) {
+				var theId = obj.id;
+				var numId;
+				if ( theId == "NummaZero") {
+					numId = 0;
+				} else if ( theId == "NummaOne") {
+					numId = 1;
+				} else if ( theId == "NummaTwo") {
+					numId = 2;
+				} else if ( theId == "NummaThree") {
+					numId = 3;
+				} else if ( theId == "NummaFour") {
+					numId = 4;
+				} else if ( theId == "NummaFive") {
+					numId = 5;
+				}
+
+				if (obj.style.listStyleType == "circle") {
+					obj.style.listStyleType = "none";
+
+					listArray[numId] = 0;
+
+				} else {
+
+					obj.style.listStyleType = "circle";
+
+					listArray[numId] = 1;
+
+				}
+
+			}
+		</script>
+
+	</head>
+	<body>
+		<fieldset>
+			<table width="1150" border="0">
+				<tr>
+					<td colspan="2" ><h1>
+					<center>
+						<u>Perceptron</u>
+					</center></h1></td>
+				</tr>
+
+				<tr valign="top">
+
+					<td style="height: 450px; width:420px;text-align:top;">
+					<svg style="overflow: hidden; position: center; " height="450" version="1.1" width="420" xmlns="http://www.w3.org/2000/svg">
+
+						<g id="display">
+
+						</g>
+
+					</svg><a href="#" class="classname" onclick="zoomIn()">ZoomIn</a><a href="#" class="classname" onclick="zoomOut()">ZoomOut</a><a href="#" class="classname" onclick="zoomReset()">ZoomReset</a></td>
+					<td style="height:200px;width:210px;text-align:top;">
+					<table border="1" class="special" id="data" style="width:200px; height:450;text-align:top;">
+						<caption>
+							<b> Data Points </b>
+						</caption>
+
+						<thead>
+							<tr>
+								<th class="special" scope="col" width = 22.5%>label</th>
+								<th class="special" scope="col" width = 77.5%>coordinate</th>
+							</tr>
+						</thead>
+
+						<tbody>
+							<tr>
+								<td colspan="2">
+								<div class="innerb">
+									<table id="tabletwo" style="width:150px;" >
+										<tbody>
+
+										</tbody>
+									</table>
+								</div></td>
+
+							</tr>
+						</tbody>
+
+					</table>
+					<div style ="float: left; " width = "100">
+						<br>
+
+						<b>Weight Vectors</b>
+						<p class="one" id="weight vectors">
+							<span id="w_A"> w_A = (1, -1, 1)
+								<br>
+							</span>
+							<span id= "w_B"> w_B = (-1, 1, 1)
+								<br>
+							</span>
+							<span id ="w_C"> w_C = (1, 1, -2)
+								<br>
+							</span>
+						</p>
+
+						<br>
+						<a href="#" class="classname" onclick="finnish()">Finish Training</a>
+					</td>
+					</div>
+
+					</td>
+
+					<td style=" width:550px;">
+					<table>
+						<tr>
+							<b>
+							<center>
+								Code
+							</center> </b>
+						</tr>
+						<td style=" width:50px;">
+						<ul>
+							<li onclick="circleBig(this)" id="NummaZero">
+								1
+							</li>
+							<br>
+
+							<li onclick="circleBig(this)" id="NummaOne">
+								2
+							</li>
+							<li onclick="circleBig(this)" id="NummaTwo">
+								3
+							</li>
+
+							<br>
+
+							<li onclick="circleBig(this)" id="NummaThree">
+								4
+							</li>
+							<li onclick="circleBig(this)" id="NummaFour">
+								5
+							</li>
+							<li onclick="circleBig(this)" id="NummaFive">
+								6
+							</li>
+						</ul></td>
+						<td style="width:500px; ">
+						<ul >
+							<li id="background_0" >
+								def train( trainDat, trainLab):
+							</li>
+							<br>
+							<li style="padding-left: 20px" id="background_1">
+								for data in trainDat && actLabel in trainLab:
+							</li>
+
+							<li style="padding-left: 40px" id="background_2">
+								compLabel = max(dotproduct(data, weightVectors))
+							</li>
+							<br>
+							<li style="padding-left: 40px" id="background_3">
+								if(compLabel != actLabel):
+							</li>
+							<li style="padding-left: 60px" id="background_4">
+								weightVectors[compLab] -= data
+
+							</li>
+							<li style="padding-left: 60px" id="background_5">
+								weigthVectors[actLabel]  += data
+							</li>
+						</ul></td>
+					</table>
+					<br>
+					<table style=" width: 550px;">
+						<td><b> Data </b>
+						<p id="next value" class="one" style="width: 225px">
+							<span id="train_data"> train data = (8, 3, 4) </span>
+
+							<br>
+							<span id="train_label">train label = A </span>
+
+						</p></td>
+						<td><b> Computed </b>
+						<p class="one" id="cho" style= "width: 325px">
+							data weight = [0, 0, 0]
+							<br>
+							compLabel =
+						</p></td>
+					</table>
+					<br>
+					<table style="width: 550px;">
+						<td><a href="#" class="classname" onclick="step()">Step</a></td>
+						<td><a href="#" class="classname" onclick="continueProg()">Continue</a></td>
+
+						<td><a href="#" class="classname" onclick="checkClearEnd()">Stop</a></td>
+						<td><a href="#" class="classname" onclick="reset()">Reset</a></td>
+					</table></td>
+
+				</tr>
+			</table>
+			<br>
+
+		</fieldset>
+
+	</body>
+
+</html>
